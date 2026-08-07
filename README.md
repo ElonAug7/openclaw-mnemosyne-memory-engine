@@ -25,7 +25,7 @@ Mnemosyne solves the **memory loss and context degradation** problem in OpenClaw
 ```bash
 git clone https://github.com/ElonAug7/Project-Mnemosyne-for-openclaw-.git
 cp -r → bash install.sh
-open http://localhost:8766
+open http://localhost:8765
 
 ## 📊 How It Compares
 
