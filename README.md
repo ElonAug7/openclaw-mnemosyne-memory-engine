@@ -24,8 +24,7 @@ Mnemosyne solves the **memory loss and context degradation** problem in OpenClaw
 
 ```bash
 git clone https://github.com/ElonAug7/Project-Mnemosyne-for-openclaw-.git
-cd Mnemosyne-v4-pro
-node engine.js init
+cp -r → bash install.sh
 open http://localhost:8766
 
 ## 📊 How It Compares
