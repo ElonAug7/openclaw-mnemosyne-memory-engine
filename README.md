@@ -27,3 +27,24 @@ git clone https://github.com/ElonAug7/Project-Mnemosyne-for-openclaw-.git
 cd Mnemosyne-v4-pro
 node engine.js init
 open http://localhost:8766
+
+## 📊 How It Compares
+
+| | **Mnemosyne v4 Pro** | Mem0 | Zep | LangChain Memory |
+|---|---|---|---|---|
+| **LLM API Required** | ❌ None | ✅ Yes | ✅ Yes | ✅ Yes |
+| **Vector Database** | ❌ None | ✅ Required | ✅ Required | ✅ Required |
+| **Storage Format** | Plain Markdown | Proprietary DB | PostgreSQL + Vector | Configurable |
+| **Git-Friendly** | ✅ Native | ❌ | ❌ | ❌ |
+| **Data Ownership** | ✅ 100% Local Files | ☁️ Cloud / Self-host | ☁️ Cloud / Self-host | Depends |
+| **Runtime Size** | **271KB** | ~50MB+ | ~200MB+ | Varies |
+| **Search Latency** | ~55ms | 100-500ms | 100-300ms | Varies |
+| **Token Cost per Query** | **$0.00** | $0.001-0.01 | $0.001-0.01 | $0.001-0.01 |
+| **Offline Capable** | ✅ Full | ❌ Partial | ❌ Partial | ❌ Partial |
+| **Setup Complexity** | `node engine.js init` | Docker + API Keys | Docker + DB + API | Code Integration |
+
+> 💡 **When to choose Mnemosyne:** You want a memory system that costs nothing to run, keeps all data as human-readable files you can `git diff`, and works entirely offline without any external service dependencies.
+>
+> ⚠️ **When NOT to choose Mnemosyne:** You need cross-user shared memory at scale, or require deep semantic understanding beyond TF-IDF keyword matching.
+
+If you want you get more information please step to MNEMOSYNE-REFERENCE.md
