@@ -1,426 +1,501 @@
-# 🦞 Project Mnemosyne — 全版本对比手册
+🦞 Project Mnemosyne — Full Version Comparison Handbook
 
-> 认知记忆引擎从 v1 到 v4 的完整演进历程
+The Complete Evolution of the Cognitive Memory Engine from v1 to v4
 
----
+📦 Version Overview
+Attribute   v1   v2   v3   v3-lite   v4   v4 Pro
+Release Date   2026-08-05   2026-08-06 (AM)   2026-08-06 (PM)   2026-08-06 (Eve)   2026-08-07   2026-08-07 (PM)
 
-## 📦 版本总览
+Positioning   Functional   User-Friendly   Secure   Lightweight   Intelligent   Precise
 
-| 属性 | v1 | v2 | v3 | v3-lite | v4 | v4 Pro |
-|------|-----|-----|-----|---------|-----|
-| **发布日期** | 2026-08-05 | 2026-08-06 上午 | 2026-08-06 下午 | 2026-08-06 晚间 | 2026-08-07 | 2026-08-07 下午 |
-| **定位** | 能跑 | 好用 | 安全 | 轻量 | 智能 | 精准 |
-| **引擎行数** | 2,447 | 2,981 | 3,092 | 2,975 | ~3,600 | ~3,600 |
-| **UI 服务器行数** | 323 | 457 | 551 | 531 | ~600 |
-| **HTML 行数** | 413 | 504 | 519 | 504 | ~380 |
-| **总代码行数** | 3,183 | 3,942 | 4,162 | 4,010 | ~4,580 | ~4,580 |
-| **CLI 命令数** | 28 | 36 | 36 | 14 | 44 | 44 |
-| **API 端点数** | 26 | 29 | 29 | 18 | 32 | 32 |
-| **引擎函数数** | 88 | 109 | 110 | 109 | 130+ | 130+ |
-| **参考手册** | ❌ | ✅ 825 行 | ✅ 1,061 行 | ❌ | ✅ 400 行 | ✅ 400 行 |
-| **README** | 3.7KB | 18KB | 16KB | 1.8KB | 4.0KB | 2.0KB |
+Engine LOC   2,447   2,981   3,092   2,975   ~3,600   ~3,600
 
----
-══════════════════════════════════════════════════════════════════
-  Mnemosyne 全版本最终评估报告
-  LoCoMo + Bench + 引擎指标 · 2026-08-07
-══════════════════════════════════════════════════════════════════
+UI Server LOC   323   457   551   531   ~600   ~600
 
-Version  | Search   | Grounded | Bench   | Health | Lines  | Final
-         | Latency  | Retrieval| (5-CV)  | (100)  |        |
-─────────|──────────|──────────|─────────|────────|────────|──────
-v1       |  40ms    |  38.3    |  10*    |  100   | 2,448  |  49
-v2       |  49ms    |  38.3    |  15*    |  100   | 2,982  |  51
-v3       |  42ms    |  38.3    |  20*    |   80   | 3,093  |  46
-v3-lite  |  39ms    |  38.3    |  18*    |   80   | 2,977  |  45
-v4       |  49ms    |  38.3    |  34     |  100   | 3,751  |  57
-v4-pro   |  55ms    |  38.3    |  56 ★   |  100   | 3,768  |  67 ★
-══════════════════════════════════════════════════════════════════
-═══════════════════════════════════════════════════════
-  LongMemEval — 全版本综合评估
-═══════════════════════════════════════════════════════
+HTML LOC   413   504   519   504   ~380   ~380
 
-Version   Retrieval  Imp  Health  Lat   Lines  Score
-───────────────────────────────────────────────────
-v1          75       10    100    42ms   2,448  60.2
-v2          75       15    100    36ms   2,982  62.2
-v3          75       20     80    38ms   3,093  59.2
-v3-lite     75       18     80    36ms   2,977  58.5
-v4          75       34    100    40ms   3,751  69.8
-v4-pro      75       41    100    40ms   3,768  72.7 ★
-═══════════════════════════════════════════════════════
-## 🔍 逐版详解
+Total LOC   3,183   3,942   4,162   4,010   ~4,580   ~4,580
 
-### v1 — 奠基（2026-08-05）
+CLI Commands   28   36   36   14   44   44
 
-```
-引擎: 2,447 行 | 28 命令 | 88 函数 | 26 API
-```
+API Endpoints   26   29   29   18   32   32
 
-**核心交付：**
-- ✅ 四层记忆架构（索引 / 短期 / 中期 / 长期）
-- ✅ 原始消息流记录（JSONL）+ imp 评分
-- ✅ 语义向量索引（本地 bigram+trigram，512 维）
-- ✅ 7 路并行搜索（keyword / semantic / hybrid / recent / history）
-- ✅ Web UI 控制台（文件浏览、搜索、Markdown 渲染、对话气泡）
-- ✅ 文本压缩存储（表格→标注、代码块→标签、800 字符截断）
-- ✅ 可移植安装脚本（Linux systemd + macOS launchd）
-- ✅ AGENTS.md / SOUL.md 自动注入机制
-- ✅ Gateway Hook 自动消息拦截
+Engine Functions   88   109   110   109   130+   130+
 
-**尚未实现：**
-- ❌ 无配置文件（所有阈值硬编码）
-- ❌ 无回收站（删除=永久）
-- ❌ 无建议清理
-- ❌ 无自动整合（consolidate）
-- ❌ 无夜间蒸馏（distill）
-- ❌ 无 POST/CSRF 安全
-- ❌ 无待办噪音过滤
-- ❌ 无 hook 失效检测
-- ❌ 无版本快照/备份
-- ❌ 无参考手册
-- ❌ 层名称不友好（raw/working/inject）
+Reference Manual   ❌   ✅ 825 lines   ✅ 1,061 lines   ❌   ✅ 400 lines   ✅ 400 lines
 
----
+README Size   3.7KB   18KB   16KB   1.8KB   4.0KB   2.0KB
 
-### v2 — 体验层（2026-08-06 上午）
+🏆 Final Evaluation Report
 
-```
-引擎: 2,981 行 (+534) | 36 命令 (+8) | 109 函数 (+21) | 29 API (+3)
-```
+Mnemosyne All-Version Final AssessmentLoCoMo + Bench + Engine Metrics · 2026-08-07
+Version   Search Latency   Grounded Retrieval   Bench (5-CV)   Health (100)   Lines   Final Score
+v1   40ms   38.3   10*   100   2,448   49
 
-**重大新增：**
+v2   49ms   38.3   15*   100   2,982   51
 
-| 类别 | 功能 | 说明 |
-|------|------|------|
-| **可配置** | `config.json` | 所有阈值/保留期/权重集中管理，运行时 `config --set` 动态修改 |
-| **自动整合** | `consolidate` | 消息落盘自动检查→满足条件自动写中期摘要块+索引，无需人工提醒 |
-| **夜间蒸馏** | nightly distill cron | 每晚 22:30 审阅当天摘要→生成 distill proposals |
-| **回收站** | `.trash/` | 删除保留 15 天，支持还原 + 彻底删除 |
-| **建议清理** | cleanup suggestions | 自动检测过期日志/空目录/回收站到期，Web UI 一键清理 |
-| **友好命名** | 层名重命名 | raw→对话记录 / working→工作台 / inject→今日摘要 / medium→中期归档 / long→长期知识 |
-| **开发日志** | index.md devlog | 每次 sync 自动追加迭代记录 |
-| **参考手册** | MNEMOSYNE-REFERENCE.md | 825 行完整技术文档 |
-| **安全增强** | proposals 审阅制 | nightly distill→proposals→agent 人工 `--apply`/`--reject`（防 AI 幻觉写入） |
-| **安全增强** | 进程锁 | `wx` 原子创建，2 分钟超时自动释放 |
-| **安全增强** | cron 错开 | Git 备份 03:00 / Dreaming 03:30 / Distill 22:30 |
-| **搜索优化** | gzip 索引先行 | 归档时生成 `.idx.json`，搜索先查索引后解压 |
-| **搜索优化** | imp 累积触发 | consolidate 改为 imp 总和≥3.0（替代纯消息计数） |
-| **搜索优化** | 语义去重 | 规范化文本后比较，抵抗格式差异 |
-| **imp 增强** | 手动校准 | `imp-calibrate` 命令修正评分 |
-| **UI 品牌** | logo 更新 | 去掉大脑 emoji，换成 logo.png，版本号 v1→v2 |
+v3   42ms   38.3   20*   80   3,093   46
 
-**v2 vs v1 关键差异：**
-- 配置文件从硬编码→`config.json`
-- 记忆整合从手动→自动（consolidate + nightly distill）
-- 删除从永久→回收站（15 天可恢复）
-- 层名称从技术术语→用户友好中文
-- 文档从无到有（REFERENCE 825 行）
+v3-lite   39ms   38.3   18*   80   2,977   45
 
----
+v4   49ms   38.3   34   100   3,751   57
 
-### v3 — 安全加固（2026-08-06 下午）
+v4-pro   55ms   38.3   56 ★   100   3,768   67 ★
 
-```
-引擎: 3,092 行 (+111) | 36 命令 | 110 函数 (+1) | 29 API
-```
+LongMemEval — Comprehensive Assessment
+Version   Retrieval   Imp   Health   Latency   Lines   Score
+v1   75   10   100   42ms   2,448   60.2
 
-**重大新增：**
+v2   75   15   100   36ms   2,982   62.2
 
-| 类别 | 功能 | 说明 |
-|------|------|------|
-| **Web 安全** | POST 强制 | 14 个写操作端点从 GET→POST，防止浏览器预加载/历史记录/CSRF 攻击 |
-| **Web 安全** | CSRF 保护 | POST 请求校验 Origin/Referer，仅允许 127.0.0.1/localhost |
-| **Web 安全** | safePath 统一 | `/api/delete` + `/api/trash/restore` 均通过 `safePath()` 白名单 |
-| **数据安全** | proposals 上限 | distillCatchUp 最多 10 条，超出合并——防离线 3 天回来淹没式审阅 |
-| **数据安全** | 截断保护 | raw 截断前将 imp≥0.7 的消息存入 medium（`## 截断保护`），防止关键原文永久丢失 |
-| **评分增强** | IMP_TECH | 新增技术/分析类消息 +0.12（优化/架构/代码/bug/修复/评估/方案） |
-| **质量增强** | 待办噪音过滤 | `isTodoNoise()`：最小 8 字符 + 5 种噪音模式黑名单 |
-| **运维增强** | hook 失效检测 | health 检查 `lastMessageAt`，enabled 且 >2h 无消息→warn |
-| **运维增强** | 语义索引监控 | health 检查向量数量+新鲜度 |
-| **运维增强** | 待办质量检查 | health 扫描噪音待办 |
-| **运维增强** | devlog 压缩 | cleanup 自动裁剪 devlog 到 20 条 |
-| **性能优化** | sync --quick | 快速模式（<1s），只做核心同步，会话启动专用 |
-| **文档更新** | REFERENCE 1061 行 | +236 行，v3 全文重写 |
+v3   75   20   80   38ms   3,093   59.2
 
-**v3 vs v2 关键差异：**
-- Web API：GET 写操作→POST+CSRF（从根本上消灭 CSRF 攻击面）
-- 评分系统：新增技术维度 IMP_TECH，high-imp 消息 +50%
-- 待办质量：从「提取一切」到「过滤噪音」，6 条待办→2 条有效
-- Health：从假满分 100（忽略问题）→真实评分（检测 13 项）
-- 截断：从简单丢弃→保护高价值原文（imp≥0.7→medium）
-- 蒸馏：从无上限→10 条上限+溢出合并
+v3-lite   75   18   80   36ms   2,977   58.5
 
----
+v4   75   34   100   40ms   3,751   69.8
 
-### v3-lite — 精简版（2026-08-06 晚间）
+v4-pro   75   41   100   40ms   3,768   72.7 ★
 
-```
-引擎: 2,975 行 (-117) | 14 命令 (-22) | 109 函数 (-1) | 18 API (-11)
-大小: 232K (-68K vs v3)
-```
+🔍 Version Breakdown
 
-**裁剪原则：** 保留核心记忆管线，移除锦上添花功能。
+v1 — Foundation (2026-08-05)Engine: 2,447 LOC | 28 Commands | 88 Functions | 26 APIs
 
-**移除的功能清单：**
+Core Deliverables:
+✅ Four-tier memory architecture (Index / Short-term / Medium-term / Long-term)
+✅ Raw message stream logging (JSONL) + importance (imp) scoring
+✅ Semantic vector indexing (Local bigram+trigram, 512-dim)
+✅ 7-way parallel search (keyword / semantic / hybrid / recent / history)
+✅ Web UI Console (File browsing, search, Markdown rendering, chat bubbles)
+✅ Text compression storage (Tables→annotations, Code blocks→tags, 800-char truncation)
+✅ Portable installation scripts (Linux systemd + macOS launchd)
+✅ AGENTS.md / SOUL.md auto-injection mechanism
+✅ Gateway Hook automatic message interception
 
-| 类别 | 移除项 | 影响 |
-|------|--------|------|
-| **版本管理（6 个）** | version / version-history / version-diff / conflict / restore / reindex-all | 无版本快照、差异对比、冲突检测、历史恢复 |
-| **备份导出（2 个）** | backup / export | 无 Git 备份、无 tar.gz 导出 |
-| **蒸馏审阅（3 个）** | distill-proposals / distill-reject / save-distill | 无人工审阅流程（夜间蒸馏 cron 建议也移除） |
-| **会话权限（2 个）** | sessions / permission | 无多会话视图、无权限控制 |
-| **运维工具（7 个）** | signal / save / timeline / devlog / config / content-index / imp-calibrate | 无手动信号、无开发日志、无配置命令、无 imp 校准 |
-| **记录控制（2 个）** | record-raw / save-distill | 无 raw 开关、无手动蒸馏 |
-| **Web UI** | 建议清理面板 + 回收站面板 + 层过滤 + 自动刷新 + 摘要按钮 | UI 更简洁，仅核心浏览/搜索/删除 |
+Not Yet Implemented:
+❌ No configuration file (all thresholds hardcoded)
+❌ No Recycle Bin (delete = permanent)
+❌ No cleanup suggestions
+❌ No automatic consolidation
+❌ No nightly distillation
+❌ No POST/CSRF security
+❌ No todo noise filtering
+❌ No hook failure detection
+❌ No version snapshots/backups
+❌ No reference manual
+❌ Unfriendly layer names (raw/working/inject)
 
-**保留的核心（14 个命令）：**
+v2 — Experience Layer (2026-08-06 AM)Engine: 2,981 LOC (+534) | 36 Commands (+8) | 109 Functions (+21) | 29 APIs (+3)
 
-```
-record  status  enable/disable  init  sync  consolidate
-search  todos  embed  reindex  health  stats  cleanup
-```
+Major Additions:
+Category   Feature   Description
+Configurable   config.json   Centralized management of thresholds/retention/weights; runtime modification via config --set
 
-**v3-lite vs v3 关键差异：**
-- 命令从 36→14（-61%）
-- API 端点从 29→18（-38%）
-- Web UI 从全功能→核心浏览
-- 所有 v3 安全特性（POST+CSRF、截断保护、待办过滤、hook 检测）保留
-- 所有 v3 评分特性（IMP_TECH、噪音过滤）保留
-- 死代码（未调用函数定义）仍保留在引擎中，方便后续扩展
+Auto-Consolidation   consolidate   Auto-check on message save → writes medium-term summary blocks + index when conditions met
 
----
+Nightly Distillation   nightly distill cron   Reviews daily summaries at 22:30 → generates distill proposals
 
-### v4 — 智能层（2026-08-07）★ 当前版本
+Recycle Bin   .trash/   Retains deleted items for 15 days; supports restore + permanent delete
 
-```
-引擎: ~3,600 行 (+500) | 44 命令 (+8) | 130+ 函数 (+20) | 32 API (+3)
-```
+Cleanup Suggestions   cleanup suggestions   Auto-detects expired logs/empty dirs/trash expiry; one-click cleanup in Web UI
 
-**设计哲学：** 记忆不只是存，更要主动服务。v4 让引擎从"被动存储"变成"主动助理"。
+Friendly Naming   Layer Renaming   raw→Conversation Log / working→Workbench / inject→Daily Summary / medium→Medium Archive / long→Long-term Knowledge
 
-**重大新增（P0+P1 主动智能）：**
+Dev Log   index.md devlog   Auto-appends iteration records on every sync
 
-| 类别 | 功能 | 说明 |
-|------|------|------|
-| **记忆回响** | `context` | 会话上下文：>12h 自动话题续接（"上次聊到 XX，欢迎回来"）+ 重复话题检测 |
-| **记忆回响** | `recall` | 上下文闪回：agent 回复前搜索 top 3 历史 · hook 自动触发（imp≥0.4 & len>20） |
-| **记忆回响** | `report --weekly` | 周报：7 天话题排行 + 决策数汇总 |
-| **记忆回响** | `profile` | 用户画像：成熟度 + 情绪碎片 + UI 可编辑 |
-| **记忆回响** | `ask --days N` | 结构化问答：支持天数参数 + 无结果 fallback 全量扫描 |
-| **成长追踪** | `memory/growth.md` | 每次 MEMORY.md 新增条目自动记录时间线 |
-| **过期降级** | `stale` 命令 | 追踪 MEMORY.md 条目搜索命中时间，>60 天标 stale |
-| **冲突修复** | `conflict` 增强 | 自动检测矛盾条目 → 输出 autoResolve 建议 |
+Reference Manual   MNEMOSYNE-REFERENCE.md   825-line complete technical documentation
 
-**重大新增（P2+P3 精度与可视化）：**
+Security Enhancement   Proposal Review System   nightly distill → proposals → agent manual --apply / --reject (prevents AI hallucination writes)
 
-| 类别 | 功能 | 说明 |
-|------|------|------|
-| **自动标签** | `#tech` `#decision` `#planning` `#preference` | 摘要块标题自动追加话题分类标签 |
-| **对话模式** | instruction/question/confirmation/discussion | 统计 user 句式，识别主导对话模式 |
-| **知识缺口** | knowledge_gaps | 追踪"不知道/查一下/没找到"，标记待填补领域 |
-| **摘要自评** | `<!-- quality: ✅/缺失XX -->` | 每块摘要自动评估完整性 |
-| **心跳图** | 30 天热力图 | UI 💓 按钮 · 颜色深浅映射每日消息数 |
-| **时光机** | `time-travel --list/--restore` | 浏览/恢复 MEMORY.md 历史版本 |
-| **访问日志** | UI 📜 按钮 | 引擎活动统计（轮次/消息/整合/索引/待办） |
-| **UI 收纳** | 📦 更多 ▾ 折叠组 | 6 个工具按钮收进折叠面板 |
-| **画像编辑** | UI ✏️ → 💾 | textarea 编辑 + API save 端点 |
-| **刷新优化** | 工作台用 `/api/status` | 浮窗获取实时状态而非读过期文件 |
-| **新 API** | `/api/stats` `/api/versions` `/api/version` | 统计/版本浏览/版本内容 |
+Security Enhancement   Process Lock   Atomic creation via wx, auto-release after 2min timeout
 
+Security Enhancement   Cron Staggering   Git Backup 03:00 / Dreaming 03:30 / Distill 22:30
 
-### v4 Pro — 精准层（2026-08-07 下午）★ 推荐
+Search Optimization   Gzip Index First   Generates .idx.json during archiving; search queries index before decompression
 
-```
-引擎: ~3,600 行 | 44 命令 | 130+ 函数 | 32 API
-imp: TF-IDF KNN (MAE 0.126) | 251条校准 | 5-fold CV
-```
+Search Optimization   Imp Accumulation Trigger   Consolidate triggered by sum(imp) ≥ 3.0 (replaces pure message count)
 
-**v4 Pro = v4 全部能力 + 智能 imp 评分。**
+Search Optimization   Semantic Deduplication   Normalizes text before comparison to resist formatting differences
 
-**v4 Pro vs v4 唯一差异：**
+Imp Enhancement   Manual Calibration   imp-calibrate command to correct scoring
 
-| 维度 | v4 | v4 Pro |
-|------|-----|--------|
-| **imp 评分** | 7维 regex (MAE 0.185) | TF-IDF KNN (MAE 0.126, -32%) |
-| **评估方法** | 全样本 (有数据泄露) | 5-fold CV (工业标准) |
-| **imp 分数** | 34 | **56** |
-| **综合分数** | 83 | **88** |
-| **训练数据** | 无 | 251条人工校准 |
-| **评分速度** | <0.1ms | <2ms |
-| **依赖** | 零 | 零 |
+UI Branding   Logo Update   Replaced brain emoji with logo.png, version bump v1→v2
 
-**核心原理：** 用你人工标注的 251 条数据做训练集，TF-IDF bigram 向量化 + cosine 相似度 Top-5 KNN 加权平均。不调 LLM、不连网络、不需要第三方库。
+Key Differences (v2 vs v1):
+Configuration: Hardcoded → config.json
+Memory Consolidation: Manual → Automatic (consolidate + nightly distill)
+Deletion: Permanent → Recycle Bin (15-day recovery)
+Layer Names: Technical jargon → User-friendly labels
+Documentation: None → REFERENCE (825 lines)
 
-**v4 vs v3 关键差异：**
-- 从"存完不管"→"主动告诉你该知道什么"（context + recall 自动）
-- 从"无标签"→"自动分类"（#decision #planning #tech #preference）
-- 从"无质量感知"→"自动评估"（摘要自评 + stale 过期检测）
-- 从"纯文本"→"可视化"（心跳图 + 时光机 + 成长日志）
-- 从"不可编辑"→"用户可控"（画像编辑 + 时光恢复）
-- 命令从 36→44（+8），API 从 29→32（+3）
+v3 — Security Hardening (2026-08-06 PM)Engine: 3,092 LOC (+111) | 36 Commands | 110 Functions (+1) | 29 APIs
 
----
+Major Additions:
+Category   Feature   Description
+Web Security   POST Enforcement   14 write endpoints switched from GET→POST to prevent browser prefetch/history/CSRF attacks
 
-## 📊 功能矩阵
+Web Security   CSRF Protection   POST requests validate Origin/Referer; allows only 127.0.0.1/localhost
 
-| 功能 | v1 | v2 | v3 | v3-lite | v4 | v4 Pro |
-|------|:--:|:--:|:--:|:-------:|:--:|
-| **核心记忆管线** |
-| 消息记录（record） | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 转录补录（sync） | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 多模式搜索（5 种） | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 语义索引（本地） | ✅ | ✅ | ✅ | ✅ | ✅ |
-| imp 评分 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 待办管理 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 工作记忆 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 今日摘要 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 引擎状态 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 健康检查 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 统计仪表盘 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **自动化** |
-| 自动整合（consolidate） | ❌ | ✅ | ✅ | ✅ | ✅ |
-| 夜间蒸馏（distill） | ❌ | ✅ | ✅ | ❌ | ✅ |
-| 归档（gzip） | ❌ | ✅ | ✅ | ✅ | ✅ |
-| 清理（cleanup） | ❌ | ✅ | ✅ | ✅ | ✅ |
-| sync --quick 模式 | ❌ | ❌ | ✅ | ✅ | ✅ |
-| **安全** |
-| POST+CSRF 保护 | ❌ | ❌ | ✅ | ✅ | ✅ |
-| safePath 统一 | ❌ | ❌ | ✅ | ✅ | ✅ |
-| 敏感信息脱敏 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 进程锁 | ❌ | ✅ | ✅ | ✅ | ✅ |
-| proposals 审阅制 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| proposals 上限 | ❌ | ❌ | ✅ | ❌ | ✅ |
-| raw 截断保护 | ❌ | ❌ | ✅ | ✅ | ✅ |
-| **评分** |
-| IMP_TECH 维度 | ❌ | ❌ | ✅ | ✅ | ✅ |
-| imp 手动校准 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| 待办噪音过滤 | ❌ | ❌ | ✅ | ✅ | ✅ |
-| **v4 记忆回响** |
-| 话题续接（context） | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 上下文闪回（recall auto） | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 每日/每周报告 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 用户画像（profile） | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 记忆问答（ask --days） | ❌ | ❌ | ❌ | ❌ | ✅ |
-| **P2+P3 智能** |
-| 话题标签（#tech等） | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 对话模式识别 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 知识缺口检测 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 摘要质量自评 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 过期记忆降级（stale） | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 冲突自动修复 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 心跳图（30天热力图） | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 记忆时光机 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 成长日志（growth.md） | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 画像可编辑 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| **运维** |
-| hook 失效检测 | ❌ | ❌ | ✅ | ✅ | ✅ |
-| 可配置文件 | ❌ | ✅ | ✅ | ✅ | ✅ |
-| 配置命令 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| Git 备份 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| tar.gz 导出 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| **版本管理** |
-| 版本快照 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| 版本对比 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| 冲突检测 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| 版本恢复 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| **Web UI** |
-| 文件浏览/搜索 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Markdown 渲染 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 对话气泡视图 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 文件删除 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 回收站 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| 建议清理 | ❌ | ✅ | ✅ | ❌ | ✅ |
-| 层过滤 | ✅ | ✅ | ✅ | ❌ | ✅ |
-| 自动刷新 | ✅ | ✅ | ✅ | ❌ | ✅ |
-| 工具按钮收纳 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 画像编辑 | ❌ | ❌ | ❌ | ❌ | ✅ |
-| 开关记录 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **文档** |
-| README | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 参考手册 | ❌ | ✅ 825行 | ✅ 1061行 | ❌ | ✅ 400行 |
-| 安装脚本 | ✅ | ✅ | ✅ | ✅ | ✅ |
+Web Security   Unified safePath   /api/delete + /api/trash/restore both use safePath() whitelist
 
----
+Data Safety   Proposal Cap   distillCatchUp max 10 items, excess merged — prevents review flooding after offline periods
 
-## 📈 增长曲线
+Data Safety   Truncation Protection   Saves messages with imp≥0.7 to medium layer (## Truncation Protection) before raw truncation
 
-```
-          引擎行数    命令数    函数数    API数   文件夹大小
-v1         2,447      28        88       26      208K
-v2         2,981      36       109       29      292K  (+40%)
-v3         3,092      36       110       29      300K  (+4%)
-v3-lite    2,975      14       109       18      232K  (-23%)
-v4        ~3,600      44       130+      32     ~350K  (+17%)
-v4 Pro    ~3,600      44       130+      32     ~350K  (+0%)
-```
+Scoring Enhancement   IMP_TECH   +0.12 bonus for technical/analytical messages (optimization/architecture/code/bug/fix/evaluation/solution)
 
-**增长分析：**
-- v1→v2：+534 行（+22%），主要是 consolidate + distill + 回收站 + 建议清理 + config
-- v2→v3：+111 行（+4%），主要是 POST+CSRF + IMP_TECH + 待办过滤 + health 增强 + sync --quick
-- v3→v4：+500 行（+17%），主要是 context/recall/report/profile/ask + 话题标签 + 对话模式 + 知识缺口 + 摘要自评 + stale/conflict/heartbeat/timetravel/growth
-- v3→v3-lite：-117 行（-4%），砍掉 22 个命令但死代码未全删
+Quality Enhancement   Todo Noise Filter   isTodoNoise(): Min 8 chars + 5-pattern blacklist
 
----
+Ops Enhancement   Hook Failure Detection   Health check on lastMessageAt; warns if enabled & >2h without messages
 
-## 🗺️ 选择指南
+Ops Enhancement   Semantic Index Monitoring   Health check on vector count + freshness
 
-| 场景 | 推荐版本 |
-|------|---------|
-| 学习/研究记忆系统架构 | v1 — 最小可理解 |
-| 日常使用、需要长期记忆审阅 | v3 — 功能最全（非智能） |
-| 资源受限/追求简洁 | v3-lite — 核心够用 |
-| 需要全功能对比参考 | v2 — 承上启下 |
-| **主动智能 + 可视化** | v4 — 记忆回响 · 话题续接 · 自动标签 · 心跳图 |
-| **精准 imp 评分 + 工业评估** | **v4 Pro — TF-IDF KNN · 5-fold CV · 251条校准 · 88分 ★ 推荐** |
+Ops Enhancement   Todo Quality Check   Health scan for noisy todos
 
-**v4 Pro 是当前推荐版本**：在 v4 全部能力之上，用 TF-IDF KNN 替代纯 regex imp 评分，MAE 降低 32%（0.185→0.126）。配合 5-fold CV 工业评估，杜绝数据泄露。
+Ops Enhancement   Devlog Compression   Cleanup auto-trims devlog to 20 entries
 
----
+Performance   sync --quick   Quick mode (<1s), core sync only, dedicated for session startup
 
-## 📁 目录结构
+Documentation   REFERENCE 1061 lines   +236 lines, full rewrite for v3
 
-```
+Key Differences (v3 vs v2):
+Web API: GET writes → POST+CSRF (fundamentally eliminates CSRF attack surface)
+Scoring: Added technical dimension IMP_TECH; high-imp messages +50%
+Todo Quality: From "extract everything" → "filter noise"; 6 todos → 2 valid ones
+Health: From fake perfect score 100 (ignoring issues) → Real scoring (13 checks)
+Truncation: From simple discard → Protects high-value originals (imp≥0.7 → medium)
+Distillation: From uncapped → 10-item cap + overflow merging
+
+v3-lite — Lightweight Edition (2026-08-06 Evening)Engine: 2,975 LOC (-117) | 14 Commands (-22) | 109 Functions (-1) | 18 APIs (-11)Size: 232K (-68K vs v3)
+
+Pruning Principle: Retain core memory pipeline, remove nice-to-have features.
+
+Removed Features:
+Category   Removed Items   Impact
+Version Mgmt (6)   version / version-history / version-diff / conflict / restore / reindex-all   No snapshots, diffs, conflict detection, or history restore
+
+Backup/Export (2)   backup / export   No Git backup, no tar.gz export
+
+Distill Review (3)   distill-proposals / distill-reject / save-distill   No manual review flow (nightly distill cron suggestions also removed)
+
+Session Auth (2)   sessions / permission   No multi-session view, no permission control
+
+Ops Tools (7)   signal / save / timeline / devlog / config / content-index / imp-calibrate   No manual signals, devlog, config commands, or imp calibration
+
+Record Control (2)   record-raw / save-distill   No raw toggle, no manual distillation
+
+Web UI   Cleanup panel + Trash panel + Layer filter + Auto-refresh + Summary button   Simplified UI: core browse/search/delete only
+
+Retained Core (14 Commands):
+record, status, enable/disable, init, sync, consolidate, search, todos, embed, reindex, health, stats, cleanup
+
+Key Differences (v3-lite vs v3):
+Commands: 36 → 14 (-61%)
+API Endpoints: 29 → 18 (-38%)
+Web UI: Full-featured → Core browsing
+All v3 security features retained (POST+CSRF, truncation protection, todo filtering, hook detection)
+All v3 scoring features retained (IMP_TECH, noise filtering)
+Dead code (unused function definitions) retained in engine for future extensibility
+
+v4 — Intelligence Layer (2026-08-07) ★ Current VersionEngine: ~3,600 LOC (+500) | 44 Commands (+8) | 130+ Functions (+20) | 32 APIs (+3)
+
+Design Philosophy: Memory shouldn't just store; it should actively serve. v4 transforms the engine from "passive storage" to "active assistant."
+
+Major Additions (P0+P1 Active Intelligence):
+Category   Feature   Description
+Memory Echo   context   Session Context: >12h auto topic continuation ("Last time we discussed XX, welcome back") + duplicate topic detection
+
+Memory Echo   recall   Context Flashback: Searches top 3 history before agent reply; hook auto-trigger (imp≥0.4 & len>20)
+
+Memory Echo   report --weekly   Weekly Report: 7-day topic ranking + decision count summary
+
+Memory Echo   profile   User Profile: Maturity + emotional fragments + UI editable
+
+Memory Echo   ask --days N   Structured Q&A: Supports day parameter + full-scan fallback on no results
+
+Growth Tracking   memory/growth.md   Auto-records timeline for every new MEMORY.md entry
+
+Expiry Degradation   stale command   Tracks MEMORY.md entry search hit time; marks >60 days as stale
+
+Conflict Repair   conflict enhancement   Auto-detects contradictory entries → outputs autoResolve suggestions
+
+Major Additions (P2+P3 Precision & Visualization):
+Category   Feature   Description
+Auto-Tagging   #tech #decision #planning #preference   Auto-appends topic classification tags to summary block titles
+
+Dialogue Mode   instruction/question/confirmation/discussion   Statistics on user sentence patterns; identifies dominant dialogue mode
+
+Knowledge Gaps   knowledge_gaps   Tracks "don't know/check later/not found"; marks areas to fill
+
+Summary Self-Eval   <!-- quality: ✅/missing XX -->   Auto-evaluates completeness for each summary block
+
+Heartbeat Map   30-day Heatmap   UI 💓 button; color depth maps to daily message count
+
+Time Machine   time-travel --list/--restore   Browse/restore MEMORY.md historical versions
+
+Access Log   UI 📜 button   Engine activity stats (turns/messages/consolidations/indexing/todos)
+
+UI Organization   📦 More ▾ Collapsible Group   6 tool buttons tucked into collapsible panel
+
+Profile Editing   UI ✏️ → 💾   Textarea editing + API save endpoint
+
+Refresh Opt.   Workbench uses /api/status   Floating window fetches real-time status instead of reading stale files
+
+New APIs   /api/stats /api/versions /api/version   Stats / Version Browsing / Version Content
+
+v4 Pro — Precision Layer (2026-08-07 PM) ★ RecommendedEngine: ~3,600 LOC | 44 Commands | 130+ Functions | 32 APIsImp: TF-IDF KNN (MAE 0.126) | 251 Calibrated Samples | 5-fold CV
+
+v4 Pro = All v4 Capabilities + Intelligent Imp Scoring
+
+Sole Difference (v4 Pro vs v4):
+Dimension   v4   v4 Pro
+Imp Scoring   7-dim Regex (MAE 0.185)   TF-IDF KNN (MAE 0.126, -32%)
+
+Evaluation Method   Full Sample (Data Leakage)   5-fold CV (Industry Standard)
+
+Imp Score   34   56
+
+Composite Score   83   88
+
+Training Data   None   251 Manually Calibrated
+
+Scoring Speed   <0.1ms   <2ms
+
+Dependencies   Zero   Zero
+
+Core Principle: Uses your 251 manually annotated samples as a training set. TF-IDF bigram vectorization + cosine similarity Top-5 KNN weighted average. No LLM calls, no network access, no third-party libraries required.
+
+Key Differences (v4 vs v3):
+From "store and forget" → "actively tells you what you need to know" (context + recall auto)
+From "no tags" → "auto-classification" (#decision #planning #tech #preference)
+From "no quality awareness" → "auto-evaluation" (summary self-eval + stale detection)
+From "pure text" → "visualization" (heartbeat map + time machine + growth log)
+From "non-editable" → "user controllable" (profile editing + time restore)
+Commands: 36 → 44 (+8); APIs: 29 → 32 (+3)
+
+📊 Feature Matrix
+Feature   v1   v2   v3   v3-lite   v4   v4 Pro
+Core Memory Pipeline
+
+Message Recording (record)   ✅   ✅   ✅   ✅   ✅   ✅
+
+Transcription Backfill (sync)   ✅   ✅   ✅   ✅   ✅   ✅
+
+Multi-mode Search (5 types)   ✅   ✅   ✅   ✅   ✅   ✅
+
+Semantic Index (Local)   ✅   ✅   ✅   ✅   ✅   ✅
+
+Imp Scoring   ✅   ✅   ✅   ✅   ✅   ✅
+
+Todo Management   ✅   ✅   ✅   ✅   ✅   ✅
+
+Working Memory   ✅   ✅   ✅   ✅   ✅   ✅
+
+Daily Summary   ✅   ✅   ✅   ✅   ✅   ✅
+
+Engine Status   ✅   ✅   ✅   ✅   ✅   ✅
+
+Health Check   ✅   ✅   ✅   ✅   ✅   ✅
+
+Stats Dashboard   ✅   ✅   ✅   ✅   ✅   ✅
+
+Automation
+
+Auto-Consolidation   ❌   ✅   ✅   ✅   ✅   ✅
+
+Nightly Distillation   ❌   ✅   ✅   ❌   ✅   ✅
+
+Archiving (gzip)   ❌   ✅   ✅   ✅   ✅   ✅
+
+Cleanup   ❌   ✅   ✅   ✅   ✅   ✅
+
+sync --quick Mode   ❌   ❌   ✅   ✅   ✅   ✅
+
+Security
+
+POST+CSRF Protection   ❌   ❌   ✅   ✅   ✅   ✅
+
+Unified safePath   ❌   ❌   ✅   ✅   ✅   ✅
+
+Sensitive Info Masking   ✅   ✅   ✅   ✅   ✅   ✅
+
+Process Lock   ❌   ✅   ✅   ✅   ✅   ✅
+
+Proposal Review System   ❌   ✅   ✅   ❌   ✅   ✅
+
+Proposal Cap   ❌   ❌   ✅   ❌   ✅   ✅
+
+Raw Truncation Protection   ❌   ❌   ✅   ✅   ✅   ✅
+
+Scoring
+
+IMP_TECH Dimension   ❌   ❌   ✅   ✅   ✅   ✅
+
+Manual Imp Calibration   ❌   ✅   ✅   ❌   ✅   ✅
+
+Todo Noise Filtering   ❌   ❌   ✅   ✅   ✅   ✅
+
+v4 Memory Echo
+
+Topic Continuation (context)   ❌   ❌   ❌   ❌   ✅   ✅
+
+Context Flashback (recall auto)   ❌   ❌   ❌   ❌   ✅   ✅
+
+Daily/Weekly Reports   ❌   ❌   ❌   ❌   ✅   ✅
+
+User Profile   ❌   ❌   ❌   ❌   ✅   ✅
+
+Memory Q&A (ask --days)   ❌   ❌   ❌   ❌   ✅   ✅
+
+P2+P3 Intelligence
+
+Topic Tags (#tech, etc.)   ❌   ❌   ❌   ❌   ✅   ✅
+
+Dialogue Mode Recognition   ❌   ❌   ❌   ❌   ✅   ✅
+
+Knowledge Gap Detection   ❌   ❌   ❌   ❌   ✅   ✅
+
+Summary Quality Self-Eval   ❌   ❌   ❌   ❌   ✅   ✅
+
+Stale Memory Degradation   ❌   ❌   ❌   ❌   ✅   ✅
+
+Auto Conflict Resolution   ❌   ❌   ❌   ❌   ✅   ✅
+
+Heartbeat Map (30-day Heatmap)   ❌   ❌   ❌   ❌   ✅   ✅
+
+Memory Time Machine   ❌   ❌   ❌   ❌   ✅   ✅
+
+Growth Log (growth.md)   ❌   ❌   ❌   ❌   ✅   ✅
+
+Editable Profile   ❌   ❌   ❌   ❌   ✅   ✅
+
+Operations
+
+Hook Failure Detection   ❌   ❌   ✅   ✅   ✅   ✅
+
+Configurable File   ❌   ✅   ✅   ✅   ✅   ✅
+
+Config Command   ❌   ✅   ✅   ❌   ✅   ✅
+
+Git Backup   ❌   ✅   ✅   ❌   ✅   ✅
+
+tar.gz Export   ❌   ✅   ✅   ❌   ✅   ✅
+
+Version Management
+
+Version Snapshots   ❌   ✅   ✅   ❌   ✅   ✅
+
+Version Diff   ❌   ✅   ✅   ❌   ✅   ✅
+
+Conflict Detection   ❌   ✅   ✅   ❌   ✅   ✅
+
+Version Restore   ❌   ✅   ✅   ❌   ✅   ✅
+
+Web UI
+
+File Browse/Search   ✅   ✅   ✅   ✅   ✅   ✅
+
+Markdown Rendering   ✅   ✅   ✅   ✅   ✅   ✅
+
+Chat Bubble View   ✅   ✅   ✅   ✅   ✅   ✅
+
+File Deletion   ✅   ✅   ✅   ✅   ✅   ✅
+
+Recycle Bin   ❌   ✅   ✅   ❌   ✅   ✅
+
+Cleanup Suggestions   ❌   ✅   ✅   ❌   ✅   ✅
+
+Layer Filtering   ✅   ✅   ✅   ❌   ✅   ✅
+
+Auto-Refresh   ✅   ✅   ✅   ❌   ✅   ✅
+
+Tool Button Organization   ❌   ❌   ❌   ❌   ✅   ✅
+
+Profile Editing   ❌   ❌   ❌   ❌   ✅   ✅
+
+Record Toggle   ✅   ✅   ✅   ✅   ✅   ✅
+
+Documentation
+
+README   ✅   ✅   ✅   ✅   ✅   ✅
+
+Reference Manual   ❌   ✅ 825L   ✅ 1061L   ❌   ✅ 400L   ✅ 400L
+
+Install Scripts   ✅   ✅   ✅   ✅   ✅   ✅
+
+📈 Growth Curve
+Version   Engine LOC   Commands   Functions   APIs   Folder Size
+v1   2,447   28   88   26   208K
+
+v2   2,981   36   109   29   292K (+40%)
+
+v3   3,092   36   110   29   300K (+4%)
+
+v3-lite   2,975   14   109   18   232K (-23%)
+
+v4   ~3,600   44   130+   32   ~350K (+17%)
+
+v4 Pro   ~3,600   44   130+   32   ~350K (+0%)
+
+Growth Analysis:
+v1→v2: +534 LOC (+22%). Mainly consolidate + distill + recycle bin + cleanup suggestions + config.
+v2→v3: +111 LOC (+4%). Mainly POST+CSRF + IMP_TECH + todo filtering + health enhancements + sync --quick.
+v3→v4: +500 LOC (+17%). Mainly context/recall/report/profile/ask + topic tags + dialogue mode + knowledge gaps + summary self-eval + stale/conflict/heartbeat/timetravel/growth.
+v3→v3-lite: -117 LOC (-4%). Cut 22 commands but dead code not fully removed.
+
+🗺️ Selection Guide
+Scenario   Recommended Version
+Learning/Researching Memory System Architecture   v1 — Minimal & Understandable
+
+Daily Use, Requires Long-term Memory Review   v3 — Most Feature-Rich (Non-AI)
+
+Resource Constrained / Pursuing Simplicity   v3-lite — Core Sufficiency
+
+Need Full Feature Comparison Reference   v2 — Transitional Bridge
+
+Active Intelligence + Visualization   v4 — Memory Echo · Topic Continuation · Auto-Tags · Heartbeat Map
+
+Precise Imp Scoring + Industrial Evaluation   v4 Pro — TF-IDF KNN · 5-fold CV · 251 Calibrated · Score 88 ★ Recommended
+
+Note: v4 Pro is the currently recommended version. Building upon all v4 capabilities, it replaces pure regex imp scoring with TF-IDF KNN, reducing MAE by 32% (0.185 → 0.126). Combined with industry-standard 5-fold CV evaluation, it eliminates data leakage.
+
+📁 Directory Structure
+
 Project-Mnemosyne/
-├── README.md                    ← 本文件
-├── VISION-v4.md                 ← v4 愿景规划文档
-├── Mnemosyne-v1/                ← v1 完整源码（2,447 行引擎）
-│   ├── engine.js
-│   ├── ui.js / ui-page.html
-│   ├── install.sh / logo.png
-│   ├── templates/ / hook/
-│   └── README.md
-├── Mnemosyne-v2/                ← v2 完整源码（2,981 行引擎）
-│   ├── engine.js
-│   ├── ui.js / ui-page.html
-│   ├── install.sh / logo.png
-│   ├── templates/ / hook/
-│   ├── README.md
-│   └── MNEMOSYNE-REFERENCE.md   ← 825 行技术手册
-├── Mnemosyne-v3/                ← v3 完整源码（3,092 行引擎）
-│   ├── engine.js
-│   ├── ui.js / ui-page.html
-│   ├── install.sh / logo.png
-│   ├── templates/ / hook/
-│   ├── README.md
-│   └── MNEMOSYNE-REFERENCE.md   ← 1,061 行技术手册（最全）
-├── Mnemosyne-v3-lite/           ← v3 精简版（2,975 行引擎）
-│   ├── engine.js
-│   ├── ui.js / ui-page.html
-│   ├── install.sh / logo.png
-│   ├── templates/ / hook/
-│   └── README.md
-├── Mnemosyne-v4/                 ← v4 完整源码（~3,600 行引擎）
-├── Mnemosyne-v4-pro/             ← v4 Pro（~3,600 行引擎 + TF-IDF）★ 推荐
-├── Mnemosyne-bench/               ← 独立评估套件
-    ├── engine.js
-    ├── ui.js / ui-page.html
-    ├── install.sh / logo.png
-    ├── templates/ / hook/
-    ├── README.md
-    └── MNEMOSYNE-REFERENCE.md   ← 400 行技术手册
-```
-
----
-
-*Project Mnemosyne · 2026-08-07 · 六个版本完整的认知记忆引擎演进历程 · v4 Pro 推荐*
+ ├── README.md                    ← This file
+ ├── VISION-v4.md                 ← v4 Vision Planning Document
+ ├── Mnemosyne-v1/                ← v1 Complete Source (2,447 LOC Engine)
+ │   ├── engine.js
+ │   ├── ui.js / ui-page.html
+ │   ├── install.sh / logo.png
+ │   ├── templates/ / hook/
+ │   └── README.md
+ ├── Mnemosyne-v2/                ← v2 Complete Source (2,981 LOC Engine)
+ │   ├── engine.js
+ │   ├── ui.js / ui-page.html
+ │   ├── install.sh / logo.png
+ │   ├── templates/ / hook/
+ │   ├── README.md
+ │   └── MNEMOSYNE-REFERENCE.md   ← 825-line Technical Manual
+ ├── Mnemosyne-v3/                ← v3 Complete Source (3,092 LOC Engine)
+ │   ├── engine.js
+ │   ├── ui.js / ui-page.html
+ │   ├── install.sh / logo.png
+ │   ├── templates/ / hook/
+ │   ├── README.md
+ │   └── MNEMOSYNE-REFERENCE.md   ← 1,061-line Technical Manual (Most Complete)
+ ├── Mnemosyne-v3-lite/           ← v3 Lite Edition (2,975 LOC Engine)
+ │   ├── engine.js
+ │   ├── ui.js / ui-page.html
+ │   ├── install.sh / logo.png
+ │   ├── templates/ / hook/
+ │   └── README.md
+ ├── Mnemosyne-v4/                ← v4 Complete Source (~3,600 LOC Engine)
+ ├── Mnemosyne-v4-pro/            ← v4 Pro (~3,600 LOC Engine + TF-IDF) ★ Recommended
+ └── Mnemosyne-bench/             ← Independent Evaluation Suite
+     ├── engine.js
+     ├── ui.js / ui-page.html
+     ├── install.sh / logo.png
+     ├── templates/ / hook/
+     ├── README.md
+     └── MNEMOSYNE-REFERENCE.md   ← 400-line Technical Manual
+Project Mnemosyne · 2026-08-07 · Complete Evolution History of Six Versions of the Cognitive Memory Engine · v4 Pro Recommended
