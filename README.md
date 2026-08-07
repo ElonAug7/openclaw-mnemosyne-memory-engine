@@ -5,6 +5,7 @@
 Node.js ≥18，零 npm 生产依赖 纯 Markdown + JSON，人类可读可编辑，git-friendly 7路并行混合搜索（TF-IDF bigram + 正则关键词 + 时间衰减 + 标签过滤 + 会话绑定 + 模糊匹配 + 结构化字段查询）内置 Web UI（端口 8766），实时记录开关、搜索、校准面板、bench 执行 trace 可视化 内置 Web UI（端口 8766），实时记录开关、搜索、校准面板 
 Linux ✅ / macOS ✅（POSIX 兼容）
 > 完全免费，不依赖apikey调用
+虽然还是非常不完善，不过也在慢慢进步
 ---
 
 ## 📦 版本总览
