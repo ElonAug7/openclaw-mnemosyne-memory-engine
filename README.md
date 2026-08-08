@@ -1,6 +1,6 @@
 # Mnemosyne — Zero-Dependency Local Memory Engine for OpenClaw
 
-> 271KB runtime · No LLM API · No Vector DB · Pure Markdown · Git-Friendly
+> 247KB（Mnemosyne-v4.5） runtime · No LLM API · No Vector DB · Pure Markdown · Git-Friendly
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
