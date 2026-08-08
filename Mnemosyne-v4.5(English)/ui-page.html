@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mnemosyne v4.5 · Xiaozhao Memory</title>
+<style>
+:root{--bg:#0f1319;--card:#181f29;--card2:#1e2733;--fg:#e6e9ef;--dim:#8b95a5;--acc:#4da3ff;--ok:#3ecf8e;--warn:#f5a623;--err:#e06c5c;--line:#2a323e}
+*{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.6 system-ui,"PingFang SC","Microsoft YaHei",sans-serif;overflow:hidden;height:100vh}
+header{padding:10px 18px;background:var(--card);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);z-index:20}
+header h1{font-size:16px;margin:0;font-weight:600}
+header .sub{color:var(--dim);font-size:11px}
+header .spacer{flex:1}
+.badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;cursor:pointer;user-select:none;transition:all .2s}
+.badge.on{background:#16352a;color:var(--ok)}.badge.off{background:#3a2420;color:var(--err)}
+.main{display:flex;height:calc(100vh - 47px);position:relative}
+.sidebar{width:280px;min-width:280px;background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;transition:all .3s;overflow:hidden}
+.sidebar.collapsed{width:40px;min-width:40px}
+.sidebar.collapsed .side-inner{opacity:0;pointer-events:none}
+.side-inner{padding:10px;display:flex;flex-direction:column;height:100%;transition:opacity .2s}
+.stats{display:flex;gap:12px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.stat b{font-size:18px;display:block;color:var(--acc)}.stat span{color:var(--dim);font-size:10px}
+.tool-row{display:flex;gap:5px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+input[type=search],input[type=text]{background:var(--card2);border:1px solid var(--line);color:var(--fg);border-radius:7px;padding:6px 10px;font-size:12px;outline:none;width:100%}
+input:focus{border-color:var(--acc)}
+.btn{background:var(--card2);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;font-size:12px;white-space:nowrap;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:#2a3442;border-color:#3a4552;transform:scale(1.03)}
+.btn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn.sm{padding:3px 8px;font-size:11px}
+.filelist{flex:1;overflow:auto;min-height:0}
+.fileitem{display:flex;align-items:center;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;transition:all .1s;gap:5px}
+.fileitem:hover{background:#232b36;transform:translateX(2px)}
+.fileitem.active{background:#253347;color:var(--acc)}
+.fileitem .meta{color:var(--dim);font-size:10px;margin-left:auto;flex-shrink:0}
+.layer-tag{font-size:9px;padding:1px 5px;border-radius:4px;flex-shrink:0}
+.layer-tag.Workbench{background:#3a1e4a;color:#ce93d8}.layer-tag.Daily{background:#1e3a4a;color:#4fc3f7}
+.layer-tag.Chat Logs{background:#2a2a3a;color:#90a4ae}.layer-tag.Index{background:#2d2a4a;color:#b39ddb}
+.layer-tag.Medium{background:#3a2e1e;color:#ffb74d}.layer-tag.Long-term{background:#1e3a2a;color:#81c784}
+.layer-tag.system{background:#333;color:#ff8a65}.layer-tag.Trash{background:#4a1e1e;color:#ef9a9a}
+.layer-tag.Todos{background:#2e3a1e;color:#ffd54f}.layer-tag.Other{background:#333;color:#999}
+.filter-row{display:flex;gap:4px;margin:5px 0;flex-wrap:wrap}
+.filter-btn{font-size:10px;padding:2px 9px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--dim);cursor:pointer;transition:all .15s}
+.filter-btn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.content-area{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.crumb{display:flex;gap:5px;align-items:center;padding:7px 14px;font-size:11px;color:var(--dim);background:var(--card);border-bottom:1px solid var(--line);min-height:32px}
+.viewport{flex:1;overflow:auto;padding:14px}
+pre{white-space:pre-wrap;word-break:break-word;font-size:13px;background:#10151c;border-radius:8px;padding:12px;border:1px solid var(--line);margin:0;max-height:100%}
+.mdview{background:#10151c;border-radius:8px;padding:14px 16px;border:1px solid var(--line);font-size:13px}
+.mdview h1,.mdview h2,.mdview h3{color:var(--acc);margin:14px 0 6px}.mdview h1{font-size:18px;border-bottom:1px solid var(--line);padding-bottom:6px}.mdview h2{font-size:15px}.mdview h3{font-size:13px}
+.mdview code{background:#222b38;padding:2px 5px;border-radius:3px;font-size:11px}
+.mdview pre{border:none;padding:8px;background:#0d1117}.mdview pre code{background:none;padding:0}
+.mdview blockquote{border-left:3px solid var(--acc);margin:6px 0;padding:3px 10px;color:var(--dim)}
+.mdview table{border-collapse:collapse;font-size:12px}.mdview th,.mdview td{border:1px solid var(--line);padding:4px 8px}.mdview th{background:var(--card2)}
+.mdview ul,.mdview ol{padding-left:22px}.mdview hr{border:none;border-top:1px solid var(--line);margin:10px 0}
+.chat .msg{margin:8px 0;max-width:85%}.chat .msg .who{font-size:10px;color:var(--dim)}.chat .msg .body{padding:8px 10px;border-radius:10px;font-size:12px;white-space:pre-wrap;word-break:break-word}
+.chat .user{margin-right:auto}.chat .user .body{background:#253347}.chat .assistant{margin-left:auto}.chat .assistant .body{background:#1c2a24}
+.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);padding:8px 20px;border-radius:8px;font-size:12px;z-index:99;display:none;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.toast.err{border-color:var(--err);color:var(--err)}
+.empty{color:var(--dim);text-align:center;padding:50px 0;font-size:13px}
+.sidebar-toggle{position:absolute;left:280px;top:50%;transform:translateY(-50%);z-index:30;width:16px;height:44px;background:var(--card);border:1px solid var(--line);border-left:none;border-radius:0 7px 7px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--dim);transition:left .3s}
+.sidebar.collapsed ~ .sidebar-toggle{left:40px}
+.sidebar-toggle:hover{color:var(--acc);background:var(--card2)}
+</style>
+</head>
+<body>
+<header>
+  <img src="/api/logo" style="height:28px;border-radius:5px;vertical-align:middle" alt="小爪">
+  <div><h1>Mnemosyne <span style="font-size:10px;color:var(--dim);font-weight:400">v4.5</span></h1></div>
+  <div class="spacer"></div>
+  <span class="badge on" id="badge">● Active</span>
+</header>
+
+<div class="main">
+  <div class="sidebar" id="sidebar">
+    <div class="side-inner">
+      <div class="stats" id="stats"></div>
+      <div class="tool-row">
+        <span class="badge on" id="badge">● Active</span>
+      </div>
+      <div class="tool-row">
+        <input type="search" id="search" placeholder="🔍 Search files...">
+        <select id="search-mode" style="background:var(--card2);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:11px">
+          <option value="file">📁 Files</option><option value="hybrid">🧠 Content</option>
+        </select>
+      </div>
+      <div class="filter-row" id="layer-filter"></div>
+      <div class="filelist" id="files"></div>
+      <div class="tool-row" style="margin-top:5px;padding-top:6px;border-top:1px solid var(--line)">
+        <button class="btn sm" id="btn-refresh">🔄 Refresh</button>
+        <button class="btn sm" id="btn-trash" onclick="showTrash()">🗑 Trash</button>
+        <button class="btn sm" id="btn-suggest" onclick="showSuggestions()" style="color:var(--warn)">🧹 Clean</button>
+        <button class="btn sm" onclick="openFile('memory/index/index.md')" style="color:var(--acc)">📑 Index</button>
+      </div>
+      <div class="tool-row">
+        <input type="text" id="todo-input" placeholder="✏️ Add todo..." style="flex:1;min-width:120px;font-size:11px;padding:5px 8px" onkeydown="if(event.key==='Enter')addTodo()">
+        <button class="btn sm" style="color:var(--ok)" onclick="v4Context()">📋 Todos</button>
+        <button class="btn sm" onclick="v4Report()">📊 Report</button>
+        <button class="btn sm" onclick="v4Profile()">👤 Profile</button>
+      </div>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="crumb" id="crumb"><span style="opacity:.6">✨ Select a file from the sidebar ~</span></div>
+    <div class="viewport" id="content"><div class="empty">🦞<br><span style="font-size:12px;color:var(--dim)">Click a file to browse<br>.md rendered · .jsonl chat bubbles</span></div></div>
+  </div>
+  <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">◀</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="suggest-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+<div style="background:var(--card);border-radius:12px;padding:20px;max-width:640px;width:90%;max-height:80vh;overflow:auto" onclick="event.stopPropagation()">
+<h3>🧹 Suggested Cleanup</h3><div style="font-size:11px;color:var(--dim);margin-bottom:8px">Total <b id="suggest-count">-</b> items · frees <b id="suggest-size">-</b></div>
+<div id="suggest-list"></div>
+<div style="margin-top:10px;display:flex;gap:8px"><button class="btn" onclick="document.getElementById('suggest-modal').style.display='none'">Close</button><button class="btn" style="color:var(--ok)" onclick="deleteAllSuggested()">Clean All</button></div></div></div>
+
+<div id="trash-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)closeTrash()">
+<div style="background:var(--card);border-radius:12px;padding:20px;max-width:640px;width:90%;max-height:80vh;overflow:auto" onclick="event.stopPropagation()">
+<h3>🗑 Trash <span style="font-size:11px;color:var(--dim)">· kept 15 days</span></h3>
+<div id="trash-list"></div>
+<div style="margin-top:10px;display:flex;gap:8px"><button class="btn" onclick="closeTrash()">Close</button><button class="btn" style="color:var(--err)" onclick="if(confirm('ConfirmClear？')){fetch('/api/trash').then(r=>r.json()).then(d=>{if(d.items)d.items.forEach(i=>apiPost('/api/trash/purge',{id:i.trashId}));toast('cleared');showTrash()})}">Clear</button></div></div></div>
+
+<div style="position:fixed;bottom:4px;right:16px;font-size:8px;color:var(--dim);opacity:.3;z-index:1">🦞 v4 Pro · POST+CSRF</div>
+
+<script>
+"use strict";
+window.addEventListener("error", e => toast("💥 "+(e.message||e.type), true));
+window.addEventListener("unhandledrejection", e => toast("💥 Request Failed", true));
+
+const $ = id => document.getElementById(id);
+let cur=null,curRaw="",viewMode="preview",allFiles=[],layerFilter=null;
+let prevContent=null,prevCur=null;
+const VISIBLE=['Workbench','Daily','Chat Logs','Index','Medium','Long-term','Todos','Other'];
+const SYSTEM=['__system','__version','__trash'];
+
+function toast(m,err){const t=$("toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";clearTimeout(t._t);t._t=setTimeout(()=>t.style.display="none",3000)}
+
+async function api(p,body){const o={method:'POST',headers:{'content-type':'application/json'}};o.body=body?JSON.stringify(body):'{}';const r=await fetch(p,o);if(!r.ok)throw Error("HTTP "+r.status);return r.json()}
+async function apiPost(u,b){return api(u,b||{})}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function esc2(s){return esc(s)}
+function fmtSize(b){return b<1024?b+"B":b<1048576?(b/1024).toFixed(1)+"KB":(b/1048576).toFixed(1)+"MB"}
+
+function toggleSidebar(){const s=$("sidebar"),t=document.querySelector(".sidebar-toggle");s.classList.toggle("collapsed");t.textContent=s.classList.contains("collapsed")?"▶":"◀"}
+function renderMd(src){
+  const lines=esc(src).split("\n");let h="",inC=false,inL=false,tab=[];
+  const fl=()=>{if(inL){h+="</ul>";inL=false}};
+  const ft=()=>{if(!tab.length)return;let rows=tab.filter(r=>!/^\s*\|?[\s:-|]+\|?\s*$/.test(r));if(rows.length){h+="<table>";rows.forEach((r,i)=>{const c=r.replace(/^\||\|$/g,"").split("|").map(x=>x.trim());h+="<tr>"+c.map(x=>(i===0?"<th>":"<td>")+il(x)+(i===0?"</th>":"</td>")).join("")+"</tr>"});h+="</table>"}tab=[]};
+  const il=t=>t.replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>").replace(/\*([^*]+)\*/g,"<i>$1</i>").replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');
+  for(const l of lines){
+    if(l.startsWith("```")){fl();ft();h+=inC?"</code></pre>":"<pre><code>";inC=!inC;continue}
+    if(inC){h+=l+"\n";continue}
+    if(/^\|/.test(l.trim())){fl();tab.push(l);continue}
+    ft();const mh=l.match(/^(#{1,3})\s+(.*)/);if(mh){fl();h+=`<h${mh[1].length}>${il(mh[2])}</h${mh[1].length}>`;continue}
+    if(/^---+$/.test(l.trim())){fl();h+="<hr>";continue}
+    if(/^&gt;\s?/.test(l)){fl();h+=`<blockquote>${il(l.replace(/^&gt;\s?/,""))}</blockquote>`;continue}
+    if(/^[-*]\s+/.test(l.trim())){if(!inL){h+="<ul>";inL=true}h+=`<li>${il(l.trim().replace(/^[-*]\s+/,""))}</li>`;continue}
+    fl();if(l.trim())h+=`<p>${il(l)}</p>`
+  }
+  fl();ft();if(inC)h+="</code></pre>";return h
+}
+
+function renderJsonl(src){
+  let h='<div class="chat">';
+  for(const l of src.split("\n")){if(!l.trim())continue;let o;try{o=JSON.parse(l)}catch{continue}
+    const c=o.role==="user"?"user":"assistant",n=o.role==="user"?"🙋 Elon":"🦞 小爪";
+    h+=`<div class="msg ${c}"><div class="who">${n} · ${o.ts?new Date(o.ts).toLocaleString("zh-CN"):""}</div><div class="body">${esc(o.text||"")}</div></div>`}
+  return h+"</div>"
+}
+
+function renderLayerFilter(){
+  const b=$("layer-filter");b.innerHTML="";
+  const mk=(l,v)=>{const x=document.createElement("button");x.className="filter-btn"+(layerFilter===v?" on":"");x.textContent=l;x.addEventListener("click",()=>{layerFilter=v;renderLayerFilter();renderFiles()});b.appendChild(x)}
+  mk("All",null);for(const l of VISIBLE)if(allFiles.some(f=>f.layer===l))mk(l,l)
+}
+function renderFiles(){
+  const q=$("search").value.trim().toLowerCase(),b=$("files");b.innerHTML="";
+  if($("search-mode").value!=="file")return;
+  const list=allFiles.filter(f=>(!q||f.path.toLowerCase().includes(q))&&(!layerFilter||f.layer===layerFilter));
+  if(!list.length){b.innerHTML='<div class="empty">🌸 No matches</div>';return}
+  for(const f of list){
+    const d=document.createElement("div");d.className="fileitem"+(f.path===cur?" active":"");
+    const tag=document.createElement("span");tag.className="layer-tag "+f.layer;tag.textContent=f.layer;
+    const name=document.createElement("span");name.style.flex="1";name.textContent=f.path;
+    const meta=document.createElement("span");meta.className="meta";meta.textContent=fmtSize(f.size);
+    d.appendChild(tag);d.appendChild(name);d.appendChild(meta);
+    d.addEventListener("click",()=>openFile(f.path));b.appendChild(d)
+  }
+}
+async function deleteFile(p){
+  if(!confirm("Move to trash?"))return;
+  try{const r=await apiPost("/api/delete",{p});if(r.trashed){toast("🗑 Deleted");allFiles=await api("/api/files");if(cur===p){cur=null;$("crumb").innerHTML="";$("content").innerHTML='<div class="empty">Deleted</div>'}renderFiles()}else toast("Failed",true)}
+  catch(e){toast("Failed",true)}
+}
+
+async function openFile(p){
+  if($("content").innerHTML&&!$("content").innerHTML.includes('class="empty"')){prevContent=$("content").innerHTML;prevCur=cur}
+  cur=p;
+  try{
+    const d=await api("/api/file?p="+encodeURIComponent(p));if(!d||!d.text){toast("📄 Empty",true);return}
+    curRaw=d.text;viewMode=p.endsWith(".md")?"preview":"raw";renderContent(p,d);renderFiles()
+  }catch(e){toast("💥 "+e.message,true)}
+}
+function renderContent(p,d){
+  const when=d&&d.mtime?new Date(d.mtime).toLocaleString("zh-CN"):"";
+  $("crumb").innerHTML="";
+  const back=document.createElement("button");back.className="btn sm";back.textContent="← Back";back.addEventListener("click",goBack);
+  const dl=document.createElement("button");dl.className="btn sm";dl.textContent="⬇ Download";dl.addEventListener("click",()=>{location.href="/api/download?p="+encodeURIComponent(p)});
+  const del=document.createElement("button");del.className="btn sm";del.textContent="🗑 Delete";del.style.color="var(--err)";del.addEventListener("click",()=>deleteFile(p));
+  $("crumb").appendChild(back);$("crumb").appendChild(dl);$("crumb").appendChild(del);
+  if(p.endsWith(".md")){const tog=document.createElement("button");tog.className="btn sm";tog.textContent=viewMode==="preview"?"Raw":"Render";tog.addEventListener("click",()=>{viewMode=viewMode==="preview"?"raw":"preview";renderContent(p,d)});$("crumb").appendChild(tog)}
+  const info=document.createElement("span");info.textContent=p+(d?" · "+fmtSize(d.size)+" · "+when:"");$("crumb").appendChild(info);
+  const box=$("content");if(!d){box.innerHTML='<div class="empty">← Select file</div>';return}
+  if(viewMode==="raw"){box.innerHTML="";const pre=document.createElement("pre");pre.textContent=d.text;box.appendChild(pre);return}
+  const div=document.createElement("div");
+  if(p.endsWith(".jsonl")){div.className="mdview";div.innerHTML=renderJsonl(d.text)}
+  else if(p.endsWith(".md")){div.className="mdview";div.innerHTML=renderMd(d.text)}
+  else{box.innerHTML="";const pre=document.createElement("pre");pre.textContent=d.text;box.appendChild(pre);return}
+  box.innerHTML="";box.appendChild(div)
+}
+function goBack(){
+  if(prevContent){$("content").innerHTML=prevContent;prevContent=null;cur=prevCur;renderFiles();return}
+  cur=null;curRaw="";$("crumb").innerHTML='<span style="opacity:.6">✨ Select a file from the sidebar ~</span>';$("content").innerHTML='<div class="empty">🦞<br><span style="font-size:12px;color:var(--dim)">Click a file to browse</span></div>';renderFiles()
+}
+
+async function loadStatus(){
+  try{
+    const st=await api("/api/status");$("badge").className="badge "+(st.enabled?"on":"off");$("badge").textContent=st.enabled?"● Active":"● Paused";
+    $("stats").innerHTML='<span class="stat"><b>'+st.turns+'</b><span>turns</span></span><span class="stat"><b>'+st.totalMessages+'</b> <span>msgs</span></span>'+(st.lastConsolidateAt?'<span class="stat"><b>'+new Date(st.lastConsolidateAt).toLocaleTimeString("zh-CN")+'</b><span><span>last cons.</span></span></span>':'')
+  }catch(e){toast("💥 Status Failed",true)}
+}
+async function loadFiles(){
+  try{
+    allFiles=await api("/api/files");renderLayerFilter();renderFiles();
+    if(cur&&cur.includes('.')){
+      try{const d=await api("/api/file?p="+encodeURIComponent(cur));if(d&&d.text&&d.text!==curRaw){curRaw=d.text;renderContent(cur,d)}}catch(e){cur=null}
+    }
+  }catch(e){toast("💥 File Failed",true)}
+}
+async function loadAll(){await Promise.all([loadStatus(),loadFiles()])}
+
+async function contentSearch(q,mode){
+  if(!q.trim())return;toast("🔍 "+q);
+  try{
+    const r=await fetch("/api/search?q="+encodeURIComponent(q)+"&mode="+mode).then(r=>r.json());if(r.error){toast(r.error,true);return}
+    let h="<style>@keyframes pulse{0%,100%{background:rgba(77,163,255,.3)}50%{background:rgba(77,163,255,.6)}}.hl{background:rgba(77,163,255,.35);border-radius:3px;padding:1px 2px;animation:pulse 1.8s ease-in-out infinite}</style>";
+    h+="<h3>🔍 "+esc2(q)+" <span style='color:var(--dim);font-size:12px'>("+r.total+" items)</span></h3>";
+    if(!r.results||!r.results.length){h+="<p class='empty'>🌸 No results</p>"}
+    else{
+      for(const item of r.results.slice(0,20)){
+        if(['Workbench','__system','__version','__trash'].includes(item.layer))continue;
+        const file=item.file||"";if(file.includes('/engine/')||file.includes('/working/')||file.includes('/versions/'))continue;
+        const line=item.line||0,text=(item.text||"").slice(0,250);
+        const hl=text.replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+")","gi"),'<span class="hl">$1</span>');
+        h+="<div style='margin:6px 0;padding:10px;background:var(--card2);border-radius:7px;font-size:12px;cursor:pointer' onmouseover='this.style.background=\"var(--line)\"' onmouseout='this.style.background=\"var(--card2)\"' onclick=\"openSearchResult('"+encodeURIComponent(file)+"',"+line+",'"+encodeURIComponent(q)+"')\"><div style='color:var(--dim);font-size:10px;margin-bottom:3px'>["+item.layer+"] "+file+(line?" :"+line:"")+"</div><div>"+hl+"</div></div>"
+      }
+    }
+    $("content").innerHTML='<div class="mdview">'+h+'</div>'
+  }catch(e){toast("💥 Search Failed",true)}
+}
+async function openSearchResult(file,line,query){
+  let p=decodeURIComponent(file);if(!p){toast("Invalid path",true);return}
+  if(!p.startsWith('memory/')&&!p.startsWith('MEMORY'))p='memory/'+p;if(p==='memory/MEMORY.md')p='MEMORY.md';
+  if($("content").innerHTML&&!$("content").innerHTML.includes('class="empty"')){prevContent=$("content").innerHTML;prevCur=cur}
+  cur=p;
+  try{
+    const d=await api("/api/file?p="+encodeURIComponent(p));if(!d||!d.text){toast("Empty file",true);return}
+    curRaw=d.text;const lines=d.text.split('\n'),q=decodeURIComponent(query),tl=Math.max(0,(line||1)-1),st=Math.max(0,tl-5),en=Math.min(lines.length,tl+5);
+    let h="<style>@keyframes p2{0%,100%{background:rgba(245,166,35,.25)}50%{background:rgba(245,166,35,.55)}}.hl2{background:rgba(245,166,35,.35);border-radius:3px;padding:1px 2px;animation:p2 1.5s ease-in-out infinite}</style>";
+    h+="<div class='crumb'><button class='btn sm' onclick='goBack()'>← Back</button><span>"+p+" · line "+(tl+1)+"</span></div><pre style='font-size:12px;background:#10151c;border-radius:7px;padding:10px;max-height:60vh;overflow:auto'>";
+    for(let i=st;i<en;i++){if(i>=lines.length)break;const lq=i===tl?" style='background:rgba(245,166,35,.15);border-left:3px solid var(--warn);padding-left:8px'":"";const txt=esc2(lines[i]||"");let ht=txt;try{ht=txt.replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+")","gi"),'<span class="hl2">$1</span>')}catch(e){}h+="<div"+lq+"><span style='color:var(--dim);margin-right:8px'>"+String(i+1).padStart(4,' ')+"</span>"+ht+"</div>"}
+    h+="</pre>";$("content").innerHTML=h;setTimeout(()=>{const t=$("content").querySelectorAll('[style*=\"border-left\"]');if(t.length)t[0].scrollIntoView({behavior:'smooth',block:'center'})},100);renderFiles()
+  }catch(e){toast("💥 "+(e.message||e),true)}
+}
+
+async function addTodo(){const inp=$("todo-input");if(!inp||!inp.value.trim())return;try{const r=await apiPost("/api/todos/add",{text:inp.value.trim()});if(r.added){toast("✅ Added");inp.value=""}else toast("Failed",true)}catch(e){toast("Failed",true)}}
+async function doneTodo(id){try{const r=await apiPost("/api/todos/done",{id:String(id)});if(r.done){toast("✅ Done");v4Context()}else toast("Failed",true)}catch(e){toast("Failed",true)}}
+
+async function v4Context(){
+  try{const todos=await api("/api/todos");let h="<h3>📋 Todos</h3>";if(todos.todos&&todos.todos.length){h+="<ul>";for(const t of todos.todos)h+="<li style='margin:4px 0;display:flex;align-items:center;gap:8px'><span style='flex:1'>"+esc2(t.text)+" <span style='color:var(--dim);font-size:10px'>#"+t.id+"</span></span><button class='btn sm' style='color:var(--ok)' onclick='doneTodo("+t.id+")'>✓</button></li>";h+="</ul>"}else h+="<p style='color:var(--ok)'>✨ Alldone！</p>";$("content").innerHTML='<div class="mdview">'+h+'</div>';toast("📋 Loaded")}catch(e){toast("Failed",true)}
+}
+async function v4Report(){try{const d=await api("/api/status"),todos=await api("/api/todos");let h="<h3>📊 Daily Report</h3>";h+="<p>🔄 "+d.turns+" turns · 💬 "+d.totalMessages+" msgs · ⚡ "+(d.highImpMsgs||0)+" high-imp</p>";h+="<p>🧩 consolidations "+(d.autoConsolidations||0)+" consolidations · 📋 "+(todos.open||0)+" todos</p>";h+="<p>🧠 semanticIndex "+(d.semanticIndex?d.semanticIndex.items+" items":"not built")+"</p>";$("content").innerHTML='<div class="mdview">'+h+'</div>';toast("📊 Generated")}catch(e){toast("Failed",true)}}
+async function v4Profile(){
+  try{
+    const r=await fetch("/api/file?p=memory/profile.md").then(r=>r.json());
+    const txt=r.text||'';
+    $("content").innerHTML='<div class="mdview"><div style="display:flex;gap:6px;margin-bottom:8px"><button class="btn sm" id="btn-edit-profile" onclick="editProfile()">✏️ Edit Profile</button><span style="color:var(--dim);font-size:10px;align-self:center">Save after editing</span></div>'+renderMd(txt)+'</div>';
+    window._profileText=txt;
+    toast("👤 Loaded")
+  }catch(e){
+    try{const r=await fetch("/api/file?p=MEMORY.md").then(r=>r.json());$("content").innerHTML='<div class="mdview">'+renderMd(r.text)+'</div>'}catch(e2){toast("Failed",true)}
+  }
+}
+async function editProfile(){
+  const txt=window._profileText||'';
+  $("content").innerHTML='<div class="mdview"><div style="display:flex;gap:6px;margin-bottom:8px"><button class="btn sm" style="color:var(--ok)" onclick="saveProfile()">💾 Save</button><button class="btn sm" onclick="v4Profile()">✕ Cancel</button></div><textarea id="profile-editor" style="width:100%;height:calc(100vh - 200px);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:12px;font:13px/1.6 monospace;resize:vertical">'+esc2(txt)+'</textarea><p style="color:var(--dim);font-size:10px;margin-top:4px">💡 Edit Markdown directly. Changes take effect immediately. Manual edits are preserved across --update.</p></div>';
+}
+async function saveProfile(){
+  const text=document.getElementById("profile-editor").value;
+  try{await apiPost("/api/save",{path:"memory/profile.md",text});toast("💾 Saved");v4Profile()}catch(e){toast("SaveFailed",true)}
+}
+
+async function showSuggestions(){const m=$("suggest-modal");if(!m)return;m.style.display="flex";
+  try{const r=await fetch("/api/cleanup-suggestions").then(r=>r.json());const l=$("suggest-list");$("suggest-count").textContent=r.total;$("suggest-size").textContent=(r.freedEstimate/1024).toFixed(1)+" KB";
+    if(!r.suggestions||!r.suggestions.length){l.innerHTML="<div class='empty'>✨ All clean</div>";return}
+    l.innerHTML=r.suggestions.map(i=>"<div style='display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12px'><span style='font-size:11px'>"+(i.safe?"✅":"⚠️")+"</span><span style='flex:1'>"+i.file+"</span><span style='color:var(--dim);font-size:10px'>"+fmtSize(i.size)+"</span><span style='color:var(--warn);font-size:10px'>"+i.reason+"</span>"+(i.safe?"<button class='btn sm' style='color:var(--ok)' onclick='deleteSuggested(\""+encodeURIComponent(i.file)+"\",this)'>Delete</button>":"")+"</div>").join("")
+  }catch(e){console.error(e)}}
+async function deleteSuggested(f,btn){btn.textContent="...";btn.disabled=true;try{const r=await apiPost("/api/delete",{p:decodeURIComponent(f)});if(r.trashed){btn.textContent="✅";btn.style.color="var(--ok)"}else{btn.textContent="❌";toast("Failed",true)}}catch(e){btn.textContent="❌"}}
+async function deleteAllSuggested(){if(!confirm("Confirm?"))return;const r=await fetch("/api/cleanup-suggestions").then(r=>r.json());if(!r.suggestions)return;let c=0;for(const i of r.suggestions){if(i.safe){try{const d=await apiPost("/api/delete",{p:i.file});if(d.trashed)c++}catch(e){}}}toast("✅ cleaned  "+c+" items");showSuggestions()}
+async function showTrash(){const m=$("trash-modal");if(!m)return;m.style.display="flex";try{const r=await fetch("/api/trash").then(r=>r.json());const l=$("trash-list");if(!l)return;if(!r.items||!r.items.length){l.innerHTML="<div class='empty'>✨ Trash empty</div>";return}l.innerHTML=r.items.map(i=>{const d=new Date(i.deletedAt).toLocaleString("zh-CN");return"<div style='display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12px'><span style='flex:1'>"+(i.original||"?").split("/").pop()+"</span><span style='color:var(--dim);font-size:10px'>"+d+"</span><span style='color:var(--dim);font-size:10px'>"+fmtSize(i.size||0)+"</span><button class='btn sm' onclick='restoreFile(\""+i.trashId+"\")'>♻ Restore</button><button class='btn sm' style='color:var(--err)' onclick='purgeFile(\""+i.trashId+"\")'>✕ Delete</button></div>"}).join("")}catch(e){console.error(e)}}
+async function restoreFile(id){try{const r=await apiPost("/api/trash/restore",{id});if(r.restored){toast("♻ restored");showTrash();allFiles=await api("/api/files");renderFiles()}else toast("Failed",true)}catch(e){toast("Failed",true)}}
+async function purgeFile(id){if(!confirm("Permanently delete?"))return;try{const r=await apiPost("/api/trash/purge",{id});if(r.purged){toast("✕ Deleted");showTrash()}else toast("Failed",true)}catch(e){toast("Failed",true)}}
+function closeTrash(){var m=$("trash-modal");if(m)m.style.display="none"}
+
+$("badge").addEventListener("click",async()=>{const s=await api("/api/status");await api("/api/"+(s.enabled?"disable":"enable"));toast(s.enabled?"⏸ disabled":"▶ enabled");loadAll()});
+$("btn-refresh").addEventListener("click",()=>{toast("🔄 refreshed");loadAll()});
+$("search").addEventListener("input",()=>{if($("search-mode").value==="file")renderFiles()});
+$("search").addEventListener("keydown",e=>{if(e.key==="Enter"&&$("search-mode").value!=="file"){e.preventDefault();contentSearch($("search").value,"hybrid")}});
+$("search-mode").addEventListener("change",()=>{const m=$("search-mode").value;$("search").placeholder=m==="file"?"🔍 Search filename...":"🔍 Search content... (Enter)";if(m==="file")renderFiles()});
+setInterval(()=>{loadAll();var c=document.getElementById("content");if(c&&c.innerHTML.includes("profile"))v4Profile()},30000);
+loadAll();
+</script>
+</body>
+</html>
