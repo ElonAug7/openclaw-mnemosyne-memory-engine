@@ -2,7 +2,7 @@
 
 > 247KB（Mnemosyne-v4.5） runtime · No LLM API · No Vector DB · Pure Markdown · Git-Friendly (Only the Mnemosyne-v4.5(English)support bilingual)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 ## 🎯 What It Does
 
