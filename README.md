@@ -1,6 +1,6 @@
 # Mnemosyne — Zero-Dependency Local Memory Engine for OpenClaw
 
-> 247KB（Mnemosyne-v4.5） runtime · No LLM API · No Vector DB · Pure Markdown · Git-Friendly
+> 247KB（Mnemosyne-v4.5） runtime · No LLM API · No Vector DB · Pure Markdown · Git-Friendly (visions before v4.5 doesn't support English only Chinese)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -10,7 +10,7 @@ Mnemosyne solves the **memory loss and context degradation** problem in OpenClaw
 
 - **Zero token cost** — No LLM API calls for memory retrieval; everything runs locally with TF-IDF + KNN
 - **Full data ownership** — All memories stored as plain Markdown files on your machine; nothing leaves your device
-- **Tiny footprint** — 271KB runtime, no vector database, no embedding model, no Docker required
+- **Tiny footprint** — 247KB runtime, no vector database, no embedding model, no Docker required
 - **Git-native** — Memory files are version-controllable, diffable, and human-readable
 - **Rich feature set** — Heartbeat heatmap, time-machine recall, user profiling, 7-way parallel search, and more
 
@@ -27,7 +27,7 @@ git clone https://github.com/ElonAug7/Project-Mnemosyne-for-openclaw-.git
 cp -r → bash install.sh
 open http://localhost:8765
 
-## 📊 How It Compares
+## 📊 How It Compares（now the Mnemosyne-v4.5 is more powerful than v4-pro）
 
 | | **Mnemosyne v4 Pro** | Mem0 | Zep | LangChain Memory |
 |---|---|---|---|---|
