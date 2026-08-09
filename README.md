@@ -4,6 +4,8 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
+## Design Philosophy: Data Sovereignty First.
+（设计哲学：数据主权至上）
 ## 🎯 What It Does
 
 Mnemosyne solves the **memory loss and context degradation** problem in OpenClaw conversations — without adding any external dependencies.
