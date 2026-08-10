@@ -6,13 +6,18 @@
 
 ## Design Philosophy: Data Sovereignty First.
 （设计哲学：数据主权至上）
+## Your data is yours. Always. No exceptions.
+## ·Zero egress — No data ever leaves your device
+## ·Zero lock-in — Plain Markdown, not proprietary formats
+## ·Zero cost — No API calls, no tokens, no surprises
+
 ## 🎯 What It Does
 
 Mnemosyne solves the **memory loss and context degradation** problem in OpenClaw conversations — without adding any external dependencies.
 
 - **Zero token cost** — No LLM API calls for memory retrieval; everything runs locally with TF-IDF + KNN
 - **Full data ownership** — All memories stored as plain Markdown files on your machine; nothing leaves your device
-- **Tiny footprint** — 247KB runtime, no vector database, no embedding model, no Docker required
+- **Tiny footprint** — <0.5MB runtime, no vector database, no embedding model, no Docker required
 - **Git-native** — Memory files are version-controllable, diffable, and human-readable
 - **Rich feature set** — Heartbeat heatmap, time-machine recall, user profiling, 7-way parallel search, and more
 
@@ -29,20 +34,8 @@ git clone https://github.com/ElonAug7/Project-Mnemosyne-for-openclaw-.git
 cp -r → bash install.sh
 open http://localhost:8765
 
-## 📊 How It Compares（now the Mnemosyne-v4.5 is more powerful than v4-pro）
+## 📊 How It Compares（full documents are in the /docs file）
 
-| | **Mnemosyne v4 Pro** | Mem0 | Zep | LangChain Memory |
-|---|---|---|---|---|
-| **LLM API Required** | ❌ None | ✅ Yes | ✅ Yes | ✅ Yes |
-| **Vector Database** | ❌ None | ✅ Required | ✅ Required | ✅ Required |
-| **Storage Format** | Plain Markdown | Proprietary DB | PostgreSQL + Vector | Configurable |
-| **Git-Friendly** | ✅ Native | ❌ | ❌ | ❌ |
-| **Data Ownership** | ✅ 100% Local Files | ☁️ Cloud / Self-host | ☁️ Cloud / Self-host | Depends |
-| **Runtime Size** | **271KB** | ~50MB+ | ~200MB+ | Varies |
-| **Search Latency** | ~55ms | 100-500ms | 100-300ms | Varies |
-| **Token Cost per Query** | **$0.00** | $0.001-0.01 | $0.001-0.01 | $0.001-0.01 |
-| **Offline Capable** | ✅ Full | ❌ Partial | ❌ Partial | ❌ Partial |
-| **Setup Complexity** | `node engine.js init` | Docker + API Keys | Docker + DB + API | Code Integration |
 
 > 💡 **When to choose Mnemosyne:** You want a memory system that costs nothing to run, keeps all data as human-readable files you can `git diff`, and works entirely offline without any external service dependencies.
 >
