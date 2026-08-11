@@ -1,0 +1,83 @@
+/**
+ * memory-recorder hook v4 — 消息进出自动记录（可移植版）
+ *
+ * 路径解析策略（优先级从高到低）：
+ *   1. install.sh 安装时写入的绝对路径（占位符替换）
+ *   2. OPENCLAW_WORKSPACE 环境变量 + tools/memory-engine/engine.js
+ *   3. ~/.openclaw/workspace/tools/memory-engine/engine.js
+ *
+ * Node 二进制解析策略：
+ *   1. install.sh 写入的 NODE_BIN 绝对路径
+ *   2. process.execPath（当前运行 Gateway 的 Node）
+ *   3. 回退 "node"（依赖 PATH）
+ *
+ * 事件监听：通用 "message" 事件（兼容所有频道）
+ * fire-and-forget：不阻塞消息处理，失败静默。
+ */
+import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
+const PLACEHOLDER = "__" + "ENGINE_PATH__"; // 防止 sed 误替换本行
+const NODE_BIN_PLACEHOLDER = "__" + "NODE_BIN__";
+
+function resolveEngine() {
+  // ① install.sh 替换的绝对路径
+  const installed = "__ENGINE_PATH__";
+  if (installed !== PLACEHOLDER && existsSync(installed)) {
+    return installed;
+  }
+  // ② 环境变量
+  const ws = process.env.OPENCLAW_WORKSPACE || join(homedir(), ".openclaw", "workspace");
+  const candidate = join(ws, "tools", "memory-engine", "engine.js");
+  if (existsSync(candidate)) return candidate;
+  // ③ 回退
+  return null;
+}
+
+function resolveNode() {
+  // ① install.sh 写入的 node 绝对路径
+  const installed = "__NODE_BIN__";
+  if (installed !== NODE_BIN_PLACEHOLDER && existsSync(installed)) {
+    return installed;
+  }
+  // ② 当前 Gateway 运行时的 Node
+  if (process.execPath && existsSync(process.execPath)) {
+    return process.execPath;
+  }
+  // ③ 回退
+  return "node";
+}
+
+const ENGINE = resolveEngine();
+const NODE_BIN = resolveNode();
+
+function record(role, text) {
+  if (!text || !ENGINE) return;
+  const t = String(text).slice(0, 50000);
+  execFile(NODE_BIN, [ENGINE, "record", "--role", role, "--text", t], { timeout: 5000 }, (err) => {
+    if (err) console.error(`[memory-recorder] record failed: ${err.message}`);
+  });
+}
+
+export default async function handler(event) {
+  if (event.type !== "message") return;
+  const ctx = event.context || {};
+
+  // 调试日志：记录所有 message 事件的 action 和可用字段
+  const fs = await import("node:fs");
+  const debugFile = (process.env.OPENCLAW_WORKSPACE || 
+    (await import("node:os")).homedir() + "/.openclaw/workspace") + "/memory/engine/hook-debug.log";
+  const debugLine = `[${new Date().toISOString()}] action=${event.action} keys=[${Object.keys(ctx).join(",")}] channel=${ctx.channel||"?"} content_len=${(ctx.content||"").length} text_len=${(ctx.text||"").length} message_len=${(ctx.message||"").length}\n`;
+  try { fs.appendFileSync(debugFile, debugLine); } catch {}
+
+  if (event.action === "received") {
+    record("user", ctx.content);
+  } else if (event.action === "sent") {
+    const text = ctx.content || ctx.text || ctx.message || "";
+    if (text && ctx.success !== false) {
+      record("assistant", text);
+    }
+  }
+}

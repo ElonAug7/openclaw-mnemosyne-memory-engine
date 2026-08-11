@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mnemosyne v6 · 小爪记忆引擎</title>
+<style>
+:root{
+  --bg:#020814;--bg2:#040e1e;
+  --s1:rgba(8,18,36,.93);--s2:rgba(12,24,46,.86);--s3:rgba(16,30,54,.8);
+  --fg:#c8d6e8;--dim:#6e84a8;--dim2:#485e80;
+  --b1:rgba(100,140,200,.07);--b2:rgba(100,140,200,.13);--b3:rgba(100,140,200,.22);
+  --accent:#5ea8f8;--accent2:#4090e0;--accent3:#90c8ff;
+  --amber:#e8b868;--amber2:#c49848;--teal:#68c8b8;
+  --ok:#68c898;--warn:#e8b868;--err:#d87880;
+  --glow:0 0 50px rgba(94,168,248,.04);
+  --font-mono:"SF Mono","JetBrains Mono","Fira Code","Cascadia Code",monospace;
+}
+*{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--b2) transparent}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:8px}
+
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:13.5px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  overflow:hidden;height:100vh;font-weight:450;
+  -webkit-font-smoothing:antialiased}
+
+/* CRT 扫描线 — 极致复古感 */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.015) 2px,rgba(0,0,0,.015) 4px)}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 55% 45% at 20% 15%,rgba(64,144,224,.03),transparent 55%),
+    radial-gradient(ellipse 40% 35% at 78% 78%,rgba(232,184,104,.015),transparent 50%),
+    radial-gradient(ellipse 50% 50% at 50% 50%,rgba(20,40,64,.02),transparent 65%)}
+
+/* 顶栏 — CRT 终端感 */
+header{padding:10px 20px;background:var(--s1);
+  backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%);
+  display:flex;align-items:center;gap:12px;border-bottom:2px solid rgba(64,144,224,.15);z-index:20;position:relative}
+header h1{font-size:15px;margin:0;font-weight:650;letter-spacing:.01em;color:var(--fg)}
+header h1 b{font-weight:700;color:var(--accent);font-family:var(--font-mono);font-size:13px}
+header .spacer{flex:1}
+
+.badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:10px;cursor:pointer;
+  user-select:none;transition:all .25s ease;border:1px solid var(--b2);font-weight:550;background:var(--s3);
+  font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em}
+.badge.on{border-color:rgba(104,200,152,.3);color:var(--ok);background:rgba(104,200,152,.06)}
+.badge.off{border-color:rgba(216,120,128,.3);color:var(--err);background:rgba(216,120,128,.06)}
+.badge:hover{border-color:var(--b3);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+
+.main{display:flex;height:calc(100vh - 47px);position:relative;z-index:1}
+
+.sidebar{width:310px;min-width:310px;background:var(--s2);
+  backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);
+  border-right:1px solid var(--b2);display:flex;flex-direction:column;transition:width .3s ease;overflow:hidden;position:relative}
+.sidebar.collapsed{width:40px;min-width:40px}
+.sidebar.collapsed .side-inner{opacity:0;pointer-events:none}
+.side-inner{padding:14px 12px 12px 14px;display:flex;flex-direction:column;height:100%;transition:opacity .15s;z-index:1}
+
+.stats{display:flex;gap:14px;margin-bottom:12px;padding-bottom:12px;border-bottom:2px solid rgba(232,184,104,.08)}
+.stat b{font-size:26px;display:block;font-weight:650;line-height:1;color:var(--accent3);
+  font-family:var(--font-mono);letter-spacing:-.5px}
+.stat span{color:var(--dim);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:500;opacity:.75}
+
+.tool-row{display:flex;gap:5px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+input,select{background:rgba(8,18,36,.6);border:1px solid var(--b2);color:var(--fg);
+  border-radius:8px;padding:7px 11px;font-size:11.5px;outline:none;width:100%;transition:all .2s}
+input:focus,select:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(64,144,224,.08)}
+input::placeholder{color:var(--dim2);font-weight:400;opacity:.5;font-style:italic}
+
+.btn{background:rgba(8,18,36,.7);color:var(--dim);border:1px solid var(--b2);border-radius:8px;
+  padding:5px 10px;cursor:pointer;font-size:11px;white-space:nowrap;transition:all .2s ease;
+  display:inline-flex;align-items:center;gap:4px;font-weight:500}
+.btn:hover{background:rgba(64,144,224,.08);color:var(--accent3);border-color:var(--b3)}
+.btn:active{transform:scale(.97)}
+.btn.on{background:rgba(64,144,224,.1);color:var(--accent);border-color:rgba(64,144,224,.25)}
+.btn.sm{padding:4px 8px;font-size:10px;border-radius:6px}
+
+/* 底部控制盘 — 复古终端操作面板 */
+.control-deck{margin-top:auto;padding-top:10px;border-top:2px solid rgba(232,184,104,.1);display:flex;flex-direction:column;gap:6px}
+.control-deck .deck-label{font-size:8px;color:var(--amber);text-transform:uppercase;letter-spacing:.12em;
+  font-family:var(--font-mono);opacity:.6;text-align:center;margin-bottom:2px}
+.deck-row{display:flex;gap:4px}
+.deck-btn{flex:1;background:rgba(8,18,36,.8);border:1px solid var(--b2);border-radius:6px;
+  padding:8px 4px;cursor:pointer;font-size:9.5px;color:var(--dim);text-align:center;
+  transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:var(--font-mono);position:relative;overflow:hidden}
+.deck-btn::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--b2),transparent)}
+.deck-btn:hover{background:rgba(64,144,224,.06);color:var(--accent3);border-color:var(--b3)}
+.deck-btn:active{background:rgba(64,144,224,.1);transform:scale(.96)}
+.deck-btn .icon{font-size:15px;line-height:1}
+.deck-btn .label{font-size:8px;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+
+/* 琥珀色高亮行 */
+.deck-row.accent .deck-btn{border-color:rgba(232,184,104,.15)}
+.deck-row.accent .deck-btn:hover{background:rgba(232,184,104,.06);color:var(--amber);border-color:rgba(232,184,104,.25)}
+.deck-btn.primary{background:rgba(64,144,224,.06);border-color:rgba(64,144,224,.15);color:var(--accent3)}
+.deck-btn.primary:hover{background:rgba(64,144,224,.12);color:var(--accent)}
+
+/* 文件列表 */
+.filelist{flex:1;overflow:auto;min-height:0}
+.fileitem{display:flex;align-items:center;padding:5px 10px;border-radius:6px;cursor:pointer;
+  font-size:11.5px;transition:all .12s;gap:6px;margin:1px 0;font-weight:450}
+.fileitem:hover{background:rgba(64,144,224,.05)}
+.fileitem.active{background:rgba(64,144,224,.08);color:var(--accent3);font-weight:550}
+.fileitem .meta{color:var(--dim2);font-size:9.5px;margin-left:auto;flex-shrink:0;
+  font-family:var(--font-mono);opacity:.7}
+
+.layer-tag{font-size:8px;padding:2px 6px;border-radius:8px;flex-shrink:0;font-weight:550;
+  letter-spacing:.02em;border:1px solid transparent;font-family:var(--font-mono)}
+.layer-tag.工作台{background:rgba(94,168,248,.08);color:#98c8f8;border-color:rgba(94,168,248,.12)}
+.layer-tag.今日摘要{background:rgba(64,144,224,.06);color:#88bcf8;border-color:rgba(64,144,224,.1)}
+.layer-tag.对话记录{background:rgba(100,140,200,.04);color:#8898b4;border-color:rgba(100,140,200,.07)}
+.layer-tag.索引{background:rgba(94,168,248,.06);color:#b4d4f8;border-color:rgba(94,168,248,.1)}
+.layer-tag.中期归档{background:rgba(232,184,104,.06);color:#d8c098;border-color:rgba(232,184,104,.1)}
+.layer-tag.长期知识{background:rgba(104,200,152,.06);color:#90d8b0;border-color:rgba(104,200,152,.1)}
+.layer-tag.系统{background:rgba(100,140,200,.03);color:#c89888;border-color:rgba(100,140,200,.06)}
+.layer-tag.回收站{background:rgba(216,120,128,.06);color:#dc9c9c;border-color:rgba(216,120,128,.1)}
+.layer-tag.待办{background:rgba(232,184,104,.06);color:#dcc8a0;border-color:rgba(232,184,104,.1)}
+.layer-tag.其他{background:rgba(100,140,200,.03);color:#8898b4;border-color:rgba(100,140,200,.06)}
+
+.filter-row{display:flex;gap:4px;margin:5px 0;flex-wrap:wrap}
+.filter-btn{font-size:9.5px;padding:3px 10px;border-radius:14px;border:1px solid var(--b2);
+  background:rgba(8,18,36,.5);color:var(--dim2);cursor:pointer;transition:all .2s;font-weight:500}
+.filter-btn:hover{border-color:var(--b3);color:var(--dim)}
+.filter-btn.on{background:rgba(64,144,224,.12);color:var(--accent);border-color:rgba(64,144,224,.25)}
+
+.content-area{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1}
+.crumb{display:flex;gap:7px;align-items:center;padding:6px 20px;font-size:10.5px;color:var(--dim2);
+  background:rgba(8,18,36,.75);border-bottom:1px solid var(--b1);min-height:32px;font-weight:450;
+  font-family:var(--font-mono);letter-spacing:.02em}
+.viewport{flex:1;overflow:auto;padding:24px 28px}
+
+pre{white-space:pre-wrap;word-break:break-word;font-size:12.5px;background:rgba(2,8,20,.5);
+  border-radius:10px;padding:16px;border:1px solid var(--b2);margin:0;
+  font-family:var(--font-mono);line-height:1.8;color:var(--fg)}
+
+.mdview{background:var(--s3);border:1px solid var(--b2);border-radius:12px;font-size:13.5px;
+  position:relative;overflow:hidden;padding:22px 28px;font-weight:450}
+.mdview::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--amber2),var(--accent2),transparent);opacity:.4;border-radius:2px}
+.mdview h1,.mdview h2,.mdview h3{font-weight:650;margin:20px 0 8px}
+.mdview h1{font-size:18px;border-bottom:1px solid var(--b2);padding-bottom:10px;color:var(--accent3)}
+.mdview h2{font-size:15px;color:var(--fg)}.mdview h3{font-size:13px;color:var(--dim);font-weight:600}
+.mdview code{background:rgba(64,144,224,.08);padding:2px 7px;border-radius:5px;font-size:11.5px;
+  font-family:var(--font-mono);color:var(--accent3);border:1px solid rgba(64,144,224,.12)}
+.mdview pre{border:1px solid var(--b2);padding:14px;background:rgba(2,8,20,.4);border-radius:8px}
+.mdview pre code{background:none;padding:0;border:none}
+.mdview blockquote{border-left:3px solid var(--amber);margin:8px 0;padding:6px 16px;color:var(--dim);
+  background:rgba(232,184,104,.02);border-radius:0 8px 8px 0;font-style:italic;font-size:13px}
+.mdview table{border-collapse:collapse;font-size:11.5px;width:100%}
+.mdview th,.mdview td{border:1px solid var(--b1);padding:6px 12px;text-align:left}
+.mdview th{background:rgba(64,144,224,.05);font-weight:650;color:var(--accent3);font-size:10.5px;
+  font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em}
+.mdview ul,.mdview ol{padding-left:22px}
+.mdview hr{border:none;border-top:1px solid var(--b1);margin:16px 0}
+.mdview a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(94,168,248,.25)}
+.mdview a:hover{border-bottom-color:var(--accent)}
+
+.chat .msg{margin:10px 0;max-width:78%}
+.chat .msg .who{font-size:9.5px;color:var(--dim2);margin-bottom:3px;font-weight:600;
+  letter-spacing:.04em;font-family:var(--font-mono);text-transform:uppercase}
+.chat .msg .body{padding:10px 14px;border-radius:12px;font-size:12.5px;white-space:pre-wrap;
+  word-break:break-word;line-height:1.7;font-weight:450}
+.chat .user{margin-right:auto}.chat .user .body{background:rgba(64,144,224,.05);
+  border:1px solid rgba(64,144,224,.12);border-bottom-left-radius:3px}
+.chat .assistant{margin-left:auto;margin-right:3%}.chat .assistant .body{background:rgba(104,200,184,.04);
+  border:1px solid rgba(104,200,184,.12);border-bottom-right-radius:3px}
+
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--s2);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid var(--b2);
+  padding:10px 24px;border-radius:12px;font-size:11.5px;z-index:99;display:none;
+  box-shadow:0 12px 40px rgba(2,8,20,.5),var(--glow);font-weight:550}
+.toast.err{border-color:rgba(216,120,128,.3);color:var(--err)}
+
+.empty{color:var(--dim2);text-align:center;padding:100px 0;font-size:13px;opacity:.5;font-weight:450}
+
+.sidebar-toggle{position:absolute;left:310px;top:50%;transform:translateY(-50%);z-index:30;
+  width:12px;height:40px;background:var(--s2);border:1px solid var(--b2);border-left:none;
+  border-radius:0 8px 8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--dim2);transition:all .3s ease}
+.sidebar.collapsed ~ .sidebar-toggle{left:40px}
+.sidebar-toggle:hover{color:var(--accent);border-color:var(--accent2)}
+
+.thanks-overlay{position:fixed;inset:0;background:rgba(2,8,20,.97);z-index:2000;
+  display:none;flex-direction:column;align-items:center;justify-content:center}
+.thanks-overlay.show{display:flex;animation:tkIn .35s ease-out}
+@keyframes tkIn{from{opacity:0}to{opacity:1}}
+.thanks-back{position:absolute;top:24px;left:24px;background:var(--s2);border:1px solid var(--b2);
+  color:var(--dim);border-radius:24px;width:40px;height:40px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:all .25s;z-index:10;font-weight:500}
+.thanks-back:hover{background:rgba(64,144,224,.12);color:var(--accent3);border-color:var(--accent2)}
+.thanks-content{text-align:center;max-width:540px;padding:40px 20px;user-select:none}
+.thanks-content h2{font-size:28px;margin:0 0 4px;font-weight:600;letter-spacing:-.01em;color:var(--accent3)}
+.thanks-content .subtitle{color:var(--dim2);font-size:12px;margin-bottom:40px;opacity:.6;font-weight:450}
+.thanks-card{background:var(--s2);border:1px solid var(--b2);border-radius:14px;padding:22px 26px;
+  margin:10px 0;text-align:left;transition:all .25s ease;position:relative;overflow:hidden}
+.thanks-card::before{content:'';position:absolute;top:50%;left:0;transform:translateY(-50%);
+  width:3px;height:35%;border-radius:3px;background:linear-gradient(180deg,var(--amber2),var(--accent2));opacity:.5}
+.thanks-card:nth-child(2){animation:cardUp .45s ease-out .1s both}
+.thanks-card:nth-child(3){animation:cardUp .45s ease-out .2s both}
+@keyframes cardUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.thanks-card:hover{border-color:var(--b3);background:rgba(64,144,224,.03)}
+.thanks-card .name{font-size:16px;font-weight:650;color:var(--fg);padding-left:14px}
+.thanks-card .role{font-size:10.5px;color:var(--dim2);margin-top:3px;padding-left:14px;font-weight:500}
+.thanks-card .desc{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.7;opacity:.75;padding-left:14px}
+.thanks-card .badge-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;padding-left:14px}
+.thanks-tag{font-size:9.5px;padding:3px 10px;border:1px solid var(--b2);border-radius:10px;color:var(--accent3)}
+.thanks-footer{color:var(--dim2);font-size:11px;margin-top:44px;opacity:.35;
+  animation:cardUp .45s ease-out .3s both;font-weight:450;font-style:italic}
+</style>
+</head>
+<body>
+<header>
+  <img src="/api/logo" style="height:28px;border-radius:5px;vertical-align:middle" alt="小爪">
+  <div><h1>Mnemosyne <span style="font-size:10px;color:var(--dim);font-weight:400">v6</span></h1><div style="font-size:9px;color:var(--dim);opacity:.6">全量存储 · 精准回忆 · 跨平台</div></div>
+  <div class="spacer"></div>
+  <span class="badge" id="lang-toggle" onclick="toggleLang()" style="cursor:pointer;margin-right:8px">🌐 EN</span>
+  <span class="badge on" id="badge" data-lang="active">● Active</span>
+</header>
+
+<div class="main">
+  <div class="sidebar" id="sidebar">
+    <div class="side-inner">
+      <div class="stats" id="stats"></div>
+      <div class="tool-row">
+        <span class="badge on" id="badge" data-lang="active">● Active</span>
+      </div>
+      <div class="tool-row">
+        <input type="search" id="search" placeholder="🔍 Search files..." data-lang="searchFile">
+        <select id="search-mode" style="background:var(--card2);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:11px">
+          <option value="file">📁 文件</option><option value="hybrid">🔍 搜索</option>
+        </select>
+      </div>
+      <div class="filter-row" id="layer-filter"></div>
+      <div class="filelist" id="files"></div>
+
+      <!-- v6.1 复古终端控制盘 -->
+      <div class="control-deck">
+        <div class="deck-label">⌘ CONTROL DECK</div>
+
+        <div class="deck-row">
+          <button class="deck-btn primary" onclick="v4Context()"><span class="icon">📋</span><span class="label" data-lang="todoBtn">Todos</span></button>
+          <button class="deck-btn" onclick="v4Report()"><span class="icon">📊</span><span class="label" data-lang="report">Report</span></button>
+          <button class="deck-btn" onclick="v4Profile()"><span class="icon">👤</span><span class="label" data-lang="profile">Profile</span></button>
+        </div>
+
+        <div class="deck-row">
+          <button class="deck-btn" id="btn-refresh"><span class="icon">🔄</span><span class="label" data-lang="refresh">Refresh</span></button>
+          <button class="deck-btn" onclick="showTrash()"><span class="icon">🗑</span><span class="label" data-lang="trash">Trash</span></button>
+          <button class="deck-btn" onclick="showSuggestions()"><span class="icon">🧹</span><span class="label" data-lang="clean">Clean</span></button>
+          <button class="deck-btn" onclick="openFile('memory/index/index.md')"><span class="icon">📑</span><span class="label" data-lang="idxBtn">Index</span></button>
+        </div>
+
+        <div class="deck-row accent">
+          <button class="deck-btn" onclick="showThanks()" style="grid-column:1/-1"><span class="icon">🙏</span><span class="label">Special Thanks</span></button>
+        </div>
+      </div>
+
+      <div class="tool-row" style="margin-top:4px">
+        <input type="text" id="todo-input" placeholder="✏️ Add todo..." data-lang="todoPlaceholder" style="flex:1" onkeydown="if(event.key==='Enter')addTodo()">
+      </div>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="crumb" id="crumb"><span style="opacity:.6">✨ 从左侧选择文件查看 ~</span></div>
+    <div class="viewport" id="content"><div class="empty">🦞<br><span style="font-size:12px;color:var(--dim)">点击文件开始浏览<br>.md 渲染 · .jsonl 聊天气泡</span></div></div>
+  </div>
+  <div class="sidebar-toggle" onclick="toggleSidebar()" title="折叠侧栏">◀</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="suggest-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+<div style="background:var(--card);border-radius:12px;padding:20px;max-width:640px;width:90%;max-height:80vh;overflow:auto" onclick="event.stopPropagation()">
+<h3>🧹 建议清理</h3><div style="font-size:11px;color:var(--dim);margin-bottom:8px">共计 <b id="suggest-count">-</b> 项 · 可释放 <b id="suggest-size">-</b></div>
+<div id="suggest-list"></div>
+<div style="margin-top:10px;display:flex;gap:8px"><button class="btn" onclick="document.getElementById('suggest-modal').style.display='none'">关闭</button><button class="btn" style="color:var(--ok)" onclick="deleteAllSuggested()">全部清理</button></div></div></div>
+
+<div id="trash-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)closeTrash()">
+<div style="background:var(--card);border-radius:12px;padding:20px;max-width:640px;width:90%;max-height:80vh;overflow:auto" onclick="event.stopPropagation()">
+<h3>🗑 回收站 <span style="font-size:11px;color:var(--dim)">· 保留15天</span></h3>
+<div id="trash-list"></div>
+<div style="margin-top:10px;display:flex;gap:8px"><button class="btn" onclick="closeTrash()">关闭</button><button class="btn" style="color:var(--err)" onclick="if(confirm('确定清空？')){fetch('/api/trash').then(r=>r.json()).then(d=>{if(d.items)d.items.forEach(i=>apiPost('/api/trash/purge',{id:i.trashId}));toast('已清空');showTrash()})}">清空</button></div></div></div>
+
+<!-- Special Thanks 全屏覆盖 -->
+<div id="thanks-overlay" class="thanks-overlay" onclick="if(event.target===this)closeThanks()">
+  <div class="thanks-stars" id="thanks-stars"></div>
+  <button class="thanks-back" onclick="closeThanks()" title="返回">←</button>
+  <div class="thanks-content">
+    <h2>Special Thanks 🙏</h2>
+    <div class="subtitle">Mnemosyne v6 · 跨平台记忆引擎</div>
+
+    <div class="thanks-card">
+      <div class="name">🎬 桦染霜</div>
+      <div class="role">首批跨平台测试者 · Hermes 适配验证</div>
+      <div class="desc">在 Windows (MSYS/MinGW) + Hermes 环境下完成了 Mnemosyne v6 的完整适配验证。发现并报告了 MSYS 路径映射、环境变量抽象、监控层缺失等关键问题，为 Elite 版提供了宝贵的第三方测试数据。</div>
+      <div class="badge-row">
+        <span class="thanks-tag">🧪 测试先锋</span>
+        <span class="thanks-tag">🪟 Windows</span>
+        <span class="thanks-tag">🔷 Hermes</span>
+        <span class="thanks-tag">📋 反馈报告</span>
+      </div>
+    </div>
+
+    <div class="thanks-footer">— 感谢每一位让 Mnemosyne 变得更好的你 —</div>
+  </div>
+</div>
+
+<div style="position:fixed;bottom:4px;right:16px;font-size:8px;color:var(--dim);opacity:.3;z-index:1">🦞 v6 · Compound-Cue</div>
+
+<script>
+"use strict";
+// Language toggle
+let currentLang = 'en';
+const L = {
+  en: {
+    all:'All', workbench:'Workbench', daily:'Daily', chat:'Chat Logs', index:'Index',
+    medium:'Medium', longterm:'Long-term', todos:'Todos', other:'Other',
+    search:'Search files...', files:'📁 Files', content:'🔍 Search',
+    refresh:'🔄 Refresh', trash:'🗑 Trash', clean:'🧹 Clean', idxBtn:'📑 Index',
+    todoPlaceholder:'✏️ Add todo...', todoBtn:'📋 Todos', report:'📊 Report', profile:'👤 Profile',
+    active:'● Active', paused:'● Paused',
+    selectFile:'✨ Select a file from the sidebar', clickBrowse:'Click a file to browse',
+    mdRender:'.md rendered', chatBubbles:'.jsonl chat bubbles',
+    moveTrash:'Move to trash?', deleted:'Deleted', back:'← Back', download:'⬇ Download',
+    raw:'Raw', render:'Render', empty:'📄 Empty',
+    failed:'Failed', added:'✅ Added', done:'✅ Done',
+    restore:'♻ Restore', delBtn:'✕ Delete', save:'💾 Save', cancel:'✕ Cancel',
+    sidebar:'Toggle Sidebar', searchFile:'Search filename...',
+    searchContent:'Search content... (Enter)', noMatch:'🌸 No matches',
+    noResult:'🌸 No results', noData:'🌸 No data', idle:'🌸 Idle',
+    allClean:'✨ All clean', allDone:'✨ All done', trashEmpty:'✨ Trash empty',
+    invalidPath:'Invalid path', permDelete:'Permanently delete?', confirm:'Confirm?',
+    loaded:'📋 Loaded', generated:'📊 Generated', profileLoaded:'👤 Loaded',
+    saved:'💾 Saved', editProfile:'✏️ Edit Profile', engineTrack:'Engine tracking...',
+    keptDays:'kept 15 days', turns:'turns', msgs:'msgs', lastCons:'last cons.',
+    consolidations:'consolidations', semantic:'semantic index', notBuilt:'not built',
+    highImp:'high-imp', close:'Close', cleanAll:'Clean All',
+    suggestTitle:'🧹 Suggested Cleanup', suggestDesc:'Total', items:'items', frees:'frees',
+  },
+  zh: {
+    all:'全部', workbench:'工作台', daily:'今日摘要', chat:'对话记录', index:'索引',
+    medium:'中期归档', longterm:'长期知识', todos:'待办', other:'其他',
+    search:'搜索文件…', files:'📁 文件', content:'🔍 搜索',
+    refresh:'🔄 刷新', trash:'🗑 回收站', clean:'🧹 清理', idxBtn:'📑 索引',
+    todoPlaceholder:'✏️ 添加待办…', todoBtn:'📋 待办', report:'📊 报告', profile:'👤 画像',
+    active:'● 已开启', paused:'● 已暂停',
+    selectFile:'✨ 从左侧选择文件查看', clickBrowse:'点击文件开始浏览',
+    mdRender:'.md 渲染', chatBubbles:'.jsonl 聊天气泡',
+    moveTrash:'移入回收站？', deleted:'已删除', back:'← 返回', download:'⬇ 下载',
+    raw:'原文', render:'渲染', empty:'📄 空文件',
+    failed:'失败', added:'✅ 已添加', done:'✅ 完成',
+    restore:'♻ 还原', delBtn:'✕ 删除', save:'💾 保存', cancel:'✕ 取消',
+    sidebar:'折叠侧栏', searchFile:'搜索文件名…',
+    searchContent:'搜索内容…（回车）', noMatch:'🌸 无匹配',
+    noResult:'🌸 无结果', noData:'🌸 暂无数据', idle:'🌸 当前空闲',
+    allClean:'✨ 干净整洁', allDone:'✨ 全部完成', trashEmpty:'✨ 回收站为空',
+    invalidPath:'无效路径', permDelete:'彻底删除？', confirm:'确定？',
+    loaded:'📋 已加载', generated:'📊 已生成', profileLoaded:'👤 已加载',
+    saved:'💾 已保存', editProfile:'✏️ 编辑画像', engineTrack:'引擎跟踪中…',
+    keptDays:'保留15天', turns:'轮次', msgs:'消息', lastCons:'上次整合',
+    consolidations:'整合', semantic:'语义索引', notBuilt:'未构建',
+    highImp:'高imp', close:'关闭', cleanAll:'全部清理',
+    suggestTitle:'🧹 建议清理', suggestDesc:'共计', items:'项', frees:'可释放',
+  }
+};
+function t(key) { return (L[currentLang] || L.en)[key] || key; }
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  document.getElementById('lang-toggle').textContent = currentLang === 'en' ? '🌐 EN' : '🌐 中文';
+  applyLanguage();
+}
+function applyLanguage() {
+  document.querySelectorAll('[data-lang]').forEach(el => {
+    const key = el.getAttribute('data-lang');
+    if (!key) return;
+    const text = t(key);
+    if (el.placeholder !== undefined && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+      el.placeholder = text;
+    } else if (el.classList.contains('label')) {
+      // 控制盘按钮标签：只取文字部分，去 emoji
+      el.textContent = text.replace(/^[^\w\u4e00-\u9fff]+/,'').trim();
+    } else {
+      el.textContent = text;
+    }
+  });
+  // Update search placeholder based on mode
+  const searchEl = document.getElementById('search');
+  const modeEl = document.getElementById('search-mode');
+  if (searchEl && modeEl) {
+    searchEl.placeholder = modeEl.value === 'file' ? t('searchFile') : t('searchContent');
+  }
+  // Update todo placeholder
+  const todoEl = document.getElementById('todo-input');
+  if (todoEl) todoEl.placeholder = t('todoPlaceholder');
+  // Update badge
+  const badge = document.getElementById('badge');
+  if (badge) {
+    const isOn = badge.classList.contains('on');
+    badge.textContent = isOn ? t('active') : t('paused');
+  }
+  // Re-render dynamic content
+  if (typeof renderLayerFilter === 'function') renderLayerFilter();
+  if (typeof renderFiles === 'function') renderFiles();
+  document.getElementById('crumb').innerHTML = '<span style="opacity:.6">' + t('selectFile') + '</span>';
+  document.getElementById('content').innerHTML = '<div class="empty">🦞<br><span style="font-size:12px;color:var(--dim)">' + t('clickBrowse') + '<br>' + t('mdRender') + ' · ' + t('chatBubbles') + '</span></div>';
+}
+window.addEventListener("error", e => toast("💥 "+(e.message||e.type), true));
+window.addEventListener("unhandledrejection", e => toast("💥 请求失败", true));
+
+const $ = id => document.getElementById(id);
+let cur=null,curRaw="",viewMode="preview",allFiles=[],layerFilter=null;
+let prevContent=null,prevCur=null;
+// API layer names (English, matching ui.js layerOf) — display via t()
+const VISIBLE_KEYS=['Workbench','Daily','Chat Logs','Index','Medium','Long-term','Todos','Other'];
+const VISIBLE=VISIBLE_KEYS; // for backward compat
+function layerDisplay(name) { return t(name.toLowerCase().replace(/\s/g,'')); }
+const SYSTEM=['__system','__version','__trash'];
+
+function toast(m,err){const t=$("toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";clearTimeout(t._t);t._t=setTimeout(()=>t.style.display="none",3000)}
+
+async function api(p,body){const o={method:'POST',headers:{'content-type':'application/json'}};o.body=body?JSON.stringify(body):'{}';const r=await fetch(p,o);if(!r.ok)throw Error("HTTP "+r.status);return r.json()}
+async function apiPost(u,b){return api(u,b||{})}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function esc2(s){return esc(s)}
+function fmtSize(b){return b<1024?b+"B":b<1048576?(b/1024).toFixed(1)+"KB":(b/1048576).toFixed(1)+"MB"}
+
+function toggleSidebar(){const s=$("sidebar"),t=document.querySelector(".sidebar-toggle");s.classList.toggle("collapsed");t.textContent=s.classList.contains("collapsed")?"▶":"◀"}
+function renderMd(src){
+  const lines=esc(src).split("\n");let h="",inC=false,inL=false,tab=[];
+  const fl=()=>{if(inL){h+="</ul>";inL=false}};
+  const ft=()=>{if(!tab.length)return;let rows=tab.filter(r=>!/^\s*\|?[\s:-|]+\|?\s*$/.test(r));if(rows.length){h+="<table>";rows.forEach((r,i)=>{const c=r.replace(/^\||\|$/g,"").split("|").map(x=>x.trim());h+="<tr>"+c.map(x=>(i===0?"<th>":"<td>")+il(x)+(i===0?"</th>":"</td>")).join("")+"</tr>"});h+="</table>"}tab=[]};
+  const il=t=>t.replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>").replace(/\*([^*]+)\*/g,"<i>$1</i>").replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');
+  for(const l of lines){
+    if(l.startsWith("```")){fl();ft();h+=inC?"</code></pre>":"<pre><code>";inC=!inC;continue}
+    if(inC){h+=l+"\n";continue}
+    if(/^\|/.test(l.trim())){fl();tab.push(l);continue}
+    ft();const mh=l.match(/^(#{1,3})\s+(.*)/);if(mh){fl();h+=`<h${mh[1].length}>${il(mh[2])}</h${mh[1].length}>`;continue}
+    if(/^---+$/.test(l.trim())){fl();h+="<hr>";continue}
+    if(/^&gt;\s?/.test(l)){fl();h+=`<blockquote>${il(l.replace(/^&gt;\s?/,""))}</blockquote>`;continue}
+    if(/^[-*]\s+/.test(l.trim())){if(!inL){h+="<ul>";inL=true}h+=`<li>${il(l.trim().replace(/^[-*]\s+/,""))}</li>`;continue}
+    fl();if(l.trim())h+=`<p>${il(l)}</p>`
+  }
+  fl();ft();if(inC)h+="</code></pre>";return h
+}
+
+function renderJsonl(src){
+  let h='<div class="chat">';
+  for(const l of src.split("\n")){if(!l.trim())continue;let o;try{o=JSON.parse(l)}catch{continue}
+    const c=o.role==="user"?"user":"assistant",n=o.role==="user"?"🙋 Elon":"🦞 小爪";
+    h+=`<div class="msg ${c}"><div class="who">${n} · ${o.ts?new Date(o.ts).toLocaleString("zh-CN"):""}</div><div class="body">${esc(o.text||"")}</div></div>`}
+  return h+"</div>"
+}
+
+function renderLayerFilter(){
+  const b=$("layer-filter");b.innerHTML="";
+  const mk=(l,v,display)=>{const x=document.createElement("button");x.className="filter-btn"+(layerFilter===v?" on":"");x.textContent=display||l;x.addEventListener("click",()=>{layerFilter=v;renderLayerFilter();renderFiles()});b.appendChild(x)}
+  mk(t('all'),null,t('all'));for(const l of VISIBLE_KEYS)if(allFiles.some(f=>f.layer===l))mk(l,l,getLayerDisplay(l));
+}
+function getLayerDisplay(layer) {
+  const map={'Workbench':t('workbench'),'Daily':t('daily'),'Chat Logs':t('chat'),'Index':t('index'),'Medium':t('medium'),'Long-term':t('longterm'),'Todos':t('todos'),'Other':t('other')};
+  return map[layer]||layer;
+}
+function renderFiles(){
+  const q=$("search").value.trim().toLowerCase(),b=$("files");b.innerHTML="";
+  if($("search-mode").value!=="file")return;
+  const list=allFiles.filter(f=>(!q||f.path.toLowerCase().includes(q))&&(!layerFilter||f.layer===layerFilter));
+  if(!list.length){b.innerHTML='<div class="empty">🌸 无匹配</div>';return}
+  for(const f of list){
+    const d=document.createElement("div");d.className="fileitem"+(f.path===cur?" active":"");
+    const tag=document.createElement("span");tag.className="layer-tag "+f.layer;tag.textContent=f.layer;
+    const name=document.createElement("span");name.style.flex="1";name.textContent=f.path;
+    const meta=document.createElement("span");meta.className="meta";meta.textContent=fmtSize(f.size);
+    d.appendChild(tag);d.appendChild(name);d.appendChild(meta);
+    d.addEventListener("click",()=>openFile(f.path));b.appendChild(d)
+  }
+}
+async function deleteFile(p){
+  if(!confirm("移入回收站？"))return;
+  try{const r=await apiPost("/api/delete",{p});if(r.trashed){toast("🗑 已删除");allFiles=await api("/api/files");if(cur===p){cur=null;$("crumb").innerHTML="";$("content").innerHTML='<div class="empty">已删除</div>'}renderFiles()}else toast("失败",true)}
+  catch(e){toast("失败",true)}
+}
+
+async function openFile(p){
+  if($("content").innerHTML&&!$("content").innerHTML.includes('class="empty"')){prevContent=$("content").innerHTML;prevCur=cur}
+  cur=p;
+  try{
+    const d=await api("/api/file?p="+encodeURIComponent(p));if(!d||!d.text){toast("📄 空文件",true);return}
+    curRaw=d.text;viewMode=p.endsWith(".md")?"preview":"raw";renderContent(p,d);renderFiles()
+  }catch(e){toast("💥 "+e.message,true)}
+}
+function renderContent(p,d){
+  const when=d&&d.mtime?new Date(d.mtime).toLocaleString("zh-CN"):"";
+  $("crumb").innerHTML="";
+  const back=document.createElement("button");back.className="btn sm";back.textContent="← 返回";back.addEventListener("click",goBack);
+  const dl=document.createElement("button");dl.className="btn sm";dl.textContent="⬇ 下载";dl.addEventListener("click",()=>{location.href="/api/download?p="+encodeURIComponent(p)});
+  const del=document.createElement("button");del.className="btn sm";del.textContent="🗑 删除";del.style.color="var(--err)";del.addEventListener("click",()=>deleteFile(p));
+  $("crumb").appendChild(back);$("crumb").appendChild(dl);$("crumb").appendChild(del);
+  if(p.endsWith(".md")){const tog=document.createElement("button");tog.className="btn sm";tog.textContent=viewMode==="preview"?"原文":"渲染";tog.addEventListener("click",()=>{viewMode=viewMode==="preview"?"raw":"preview";renderContent(p,d)});$("crumb").appendChild(tog)}
+  const info=document.createElement("span");info.textContent=p+(d?" · "+fmtSize(d.size)+" · "+when:"");$("crumb").appendChild(info);
+  const box=$("content");if(!d){box.innerHTML='<div class="empty">← 选择文件</div>';return}
+  if(viewMode==="raw"){box.innerHTML="";const pre=document.createElement("pre");pre.textContent=d.text;box.appendChild(pre);return}
+  const div=document.createElement("div");
+  if(p.endsWith(".jsonl")){div.className="mdview";div.innerHTML=renderJsonl(d.text)}
+  else if(p.endsWith(".md")){div.className="mdview";div.innerHTML=renderMd(d.text)}
+  else{box.innerHTML="";const pre=document.createElement("pre");pre.textContent=d.text;box.appendChild(pre);return}
+  box.innerHTML="";box.appendChild(div)
+}
+function goBack(){
+  if(prevContent){$("content").innerHTML=prevContent;prevContent=null;cur=prevCur;renderFiles();return}
+  cur=null;curRaw="";$("crumb").innerHTML='<span style="opacity:.6">✨ 从左侧选择文件查看 ~</span>';$("content").innerHTML='<div class="empty">🦞<br><span style="font-size:12px;color:var(--dim)">点击文件开始浏览</span></div>';renderFiles()
+}
+
+async function loadStatus(){
+  try{
+    const st=await api("/api/status");$("badge").className="badge "+(st.enabled?"on":"off");$("badge").textContent=st.enabled?t("active"):t("paused");
+    $("stats").innerHTML='<span class="stat"><b>'+st.turns+'</b><span>'+t("turns")+'</span></span><span class="stat"><b>'+st.totalMessages+'</b><span>'+t("msgs")+'</span></span>'+(st.lastConsolidateAt?'<span class="stat"><b>'+new Date(st.lastConsolidateAt).toLocaleTimeString("zh-CN")+'</b><span>'+t("lastCons")+'</span></span>':'')
+  }catch(e){toast("💥 状态失败",true)}
+}
+async function loadFiles(){
+  try{
+    allFiles=await api("/api/files");renderLayerFilter();renderFiles();
+    if(cur&&cur.includes('.')){
+      try{const d=await api("/api/file?p="+encodeURIComponent(cur));if(d&&d.text&&d.text!==curRaw){curRaw=d.text;renderContent(cur,d)}}catch(e){cur=null}
+    }
+  }catch(e){toast("💥 文件失败",true)}
+}
+async function loadAll(){await Promise.all([loadStatus(),loadFiles()])}
+
+async function contentSearch(q,mode){
+  if(!q.trim())return;toast("🔍 "+q);
+  try{
+    const r=await fetch("/api/search?q="+encodeURIComponent(q)+"&mode="+mode).then(r=>r.json());if(r.error){toast(r.error,true);return}
+    let h="<style>@keyframes pulse{0%,100%{background:rgba(77,163,255,.3)}50%{background:rgba(77,163,255,.6)}}.hl{background:rgba(77,163,255,.35);border-radius:3px;padding:1px 2px;animation:pulse 1.8s ease-in-out infinite}</style>";
+    h+="<h3>🔍 "+esc2(q)+" <span style='color:var(--dim);font-size:12px'>("+r.total+" 条)</span></h3>";
+    if(!r.results||!r.results.length){h+="<p class='empty'>🌸 无结果</p>"}
+    else{
+      for(const item of r.results.slice(0,20)){
+        if(['工作台','__系统','__版本','__回收站'].includes(item.layer))continue;
+        const file=item.file||"";if(file.includes('/engine/')||file.includes('/working/')||file.includes('/versions/'))continue;
+        const line=item.line||0,text=(item.text||"").slice(0,250);
+        const hl=text.replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+")","gi"),'<span class="hl">$1</span>');
+        h+="<div style='margin:6px 0;padding:10px;background:var(--card2);border-radius:7px;font-size:12px;cursor:pointer' onmouseover='this.style.background=\"var(--line)\"' onmouseout='this.style.background=\"var(--card2)\"' onclick=\"openSearchResult('"+encodeURIComponent(file)+"',"+line+",'"+encodeURIComponent(q)+"')\"><div style='color:var(--dim);font-size:10px;margin-bottom:3px'>["+item.layer+"] "+file+(line?" :"+line:"")+"</div><div>"+hl+"</div></div>"
+      }
+    }
+    $("content").innerHTML='<div class="mdview">'+h+'</div>'
+  }catch(e){toast("💥 搜索失败",true)}
+}
+async function openSearchResult(file,line,query){
+  let p=decodeURIComponent(file);if(!p){toast("无效路径",true);return}
+  if(!p.startsWith('memory/')&&!p.startsWith('MEMORY'))p='memory/'+p;if(p==='memory/MEMORY.md')p='MEMORY.md';
+  if($("content").innerHTML&&!$("content").innerHTML.includes('class="empty"')){prevContent=$("content").innerHTML;prevCur=cur}
+  cur=p;
+  try{
+    const d=await api("/api/file?p="+encodeURIComponent(p));if(!d||!d.text){toast("空文件",true);return}
+    curRaw=d.text;const lines=d.text.split('\n'),q=decodeURIComponent(query),tl=Math.max(0,(line||1)-1),st=Math.max(0,tl-5),en=Math.min(lines.length,tl+5);
+    let h="<style>@keyframes p2{0%,100%{background:rgba(245,166,35,.25)}50%{background:rgba(245,166,35,.55)}}.hl2{background:rgba(245,166,35,.35);border-radius:3px;padding:1px 2px;animation:p2 1.5s ease-in-out infinite}</style>";
+    h+="<div class='crumb'><button class='btn sm' onclick='goBack()'>← 返回</button><span>"+p+" · 行 "+(tl+1)+"</span></div><pre style='font-size:12px;background:#10151c;border-radius:7px;padding:10px;max-height:60vh;overflow:auto'>";
+    for(let i=st;i<en;i++){if(i>=lines.length)break;const lq=i===tl?" style='background:rgba(245,166,35,.15);border-left:3px solid var(--warn);padding-left:8px'":"";const txt=esc2(lines[i]||"");let ht=txt;try{ht=txt.replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+")","gi"),'<span class="hl2">$1</span>')}catch(e){}h+="<div"+lq+"><span style='color:var(--dim);margin-right:8px'>"+String(i+1).padStart(4,' ')+"</span>"+ht+"</div>"}
+    h+="</pre>";$("content").innerHTML=h;setTimeout(()=>{const t=$("content").querySelectorAll('[style*=\"border-left\"]');if(t.length)t[0].scrollIntoView({behavior:'smooth',block:'center'})},100);renderFiles()
+  }catch(e){toast("💥 "+(e.message||e),true)}
+}
+
+async function addTodo(){const inp=$("todo-input");if(!inp||!inp.value.trim())return;try{const r=await apiPost("/api/todos/add",{text:inp.value.trim()});if(r.added){toast("✅ 已添加");inp.value=""}else toast("失败",true)}catch(e){toast("失败",true)}}
+async function doneTodo(id){try{const r=await apiPost("/api/todos/done",{id:String(id)});if(r.done){toast("✅ 完成");v4Context()}else toast("失败",true)}catch(e){toast("失败",true)}}
+
+async function v4Context(){
+  try{const todos=await api("/api/todos");let h="<h3>📋 待办清单</h3>";if(todos.todos&&todos.todos.length){h+="<ul>";for(const t of todos.todos)h+="<li style='margin:4px 0;display:flex;align-items:center;gap:8px'><span style='flex:1'>"+esc2(t.text)+" <span style='color:var(--dim);font-size:10px'>#"+t.id+"</span></span><button class='btn sm' style='color:var(--ok)' onclick='doneTodo("+t.id+")'>✓</button></li>";h+="</ul>"}else h+="<p style='color:var(--ok)'>✨ 全部完成！</p>";$("content").innerHTML='<div class="mdview">'+h+'</div>';toast("📋 已加载")}catch(e){toast("失败",true)}
+}
+async function v4Report(){try{const d=await api("/api/status"),todos=await api("/api/todos");let h="<h3>📊 "+t("report")+"</h3>";h+="<p>🔄 "+d.turns+" "+t("turns")+" · 💬 "+d.totalMessages+" "+t("msgs")+" · ⚡ "+(d.highImpMsgs||0)+" "+t("highImp")+"</p>";h+="<p>🧩 "+t("consolidations")+" "+(d.autoConsolidations||0)+" · 📋 "+(todos.open||0)+" "+t("todos")+"</p>";h+="<p>📚 "+t("semantic")+" "+(d.semanticIndex?d.semanticIndex.items+" items":t("notBuilt"))+"</p>";$("content").innerHTML='<div class="mdview">'+h+'</div>';toast(t("generated"))}catch(e){toast("失败",true)}}
+async function v4Profile(){
+  try{
+    const r=await fetch("/api/file?p=memory/profile.md").then(r=>r.json());
+    const txt=r.text||'';
+    $("content").innerHTML='<div class="mdview"><div style="display:flex;gap:6px;margin-bottom:8px"><button class="btn sm" id="btn-edit-profile" onclick="editProfile()">✏️ 编辑画像</button><span style="color:var(--dim);font-size:10px;align-self:center">手动修正后保存</span></div>'+renderMd(txt)+'</div>';
+    window._profileText=txt;
+    toast("👤 已加载")
+  }catch(e){
+    try{const r=await fetch("/api/file?p=MEMORY.md").then(r=>r.json());$("content").innerHTML='<div class="mdview">'+renderMd(r.text)+'</div>'}catch(e2){toast("失败",true)}
+  }
+}
+async function editProfile(){
+  const txt=window._profileText||'';
+  $("content").innerHTML='<div class="mdview"><div style="display:flex;gap:6px;margin-bottom:8px"><button class="btn sm" style="color:var(--ok)" onclick="saveProfile()">💾 保存</button><button class="btn sm" onclick="v4Profile()">✕ 取消</button></div><textarea id="profile-editor" style="width:100%;height:calc(100vh - 200px);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:12px;font:13px/1.6 monospace;resize:vertical">'+esc2(txt)+'</textarea><p style="color:var(--dim);font-size:10px;margin-top:4px">💡 直接编辑 Markdown 格式。保存后即刻生效，下次 --update 不会覆盖手动修改的内容。</p></div>';
+}
+async function saveProfile(){
+  const text=document.getElementById("profile-editor").value;
+  try{await apiPost("/api/save",{path:"memory/profile.md",text});toast("💾 已保存");v4Profile()}catch(e){toast("保存失败",true)}
+}
+
+async function showSuggestions(){const m=$("suggest-modal");if(!m)return;m.style.display="flex";
+  try{const r=await fetch("/api/cleanup-suggestions").then(r=>r.json());const l=$("suggest-list");$("suggest-count").textContent=r.total;$("suggest-size").textContent=(r.freedEstimate/1024).toFixed(1)+" KB";
+    if(!r.suggestions||!r.suggestions.length){l.innerHTML="<div class='empty'>✨ 干净整洁</div>";return}
+    l.innerHTML=r.suggestions.map(i=>"<div style='display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12px'><span style='font-size:11px'>"+(i.safe?"✅":"⚠️")+"</span><span style='flex:1'>"+i.file+"</span><span style='color:var(--dim);font-size:10px'>"+fmtSize(i.size)+"</span><span style='color:var(--warn);font-size:10px'>"+i.reason+"</span>"+(i.safe?"<button class='btn sm' style='color:var(--ok)' onclick='deleteSuggested(\""+encodeURIComponent(i.file)+"\",this)'>删除</button>":"")+"</div>").join("")
+  }catch(e){console.error(e)}}
+async function deleteSuggested(f,btn){btn.textContent="...";btn.disabled=true;try{const r=await apiPost("/api/delete",{p:decodeURIComponent(f)});if(r.trashed){btn.textContent="✅";btn.style.color="var(--ok)"}else{btn.textContent="❌";toast("失败",true)}}catch(e){btn.textContent="❌"}}
+async function deleteAllSuggested(){if(!confirm("确定？"))return;const r=await fetch("/api/cleanup-suggestions").then(r=>r.json());if(!r.suggestions)return;let c=0;for(const i of r.suggestions){if(i.safe){try{const d=await apiPost("/api/delete",{p:i.file});if(d.trashed)c++}catch(e){}}}toast("✅ 清理了 "+c+" 项");showSuggestions()}
+async function showTrash(){const m=$("trash-modal");if(!m)return;m.style.display="flex";try{const r=await fetch("/api/trash").then(r=>r.json());const l=$("trash-list");if(!l)return;if(!r.items||!r.items.length){l.innerHTML="<div class='empty'>✨ 回收站为空</div>";return}l.innerHTML=r.items.map(i=>{const d=new Date(i.deletedAt).toLocaleString("zh-CN");return"<div style='display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12px'><span style='flex:1'>"+(i.original||"?").split("/").pop()+"</span><span style='color:var(--dim);font-size:10px'>"+d+"</span><span style='color:var(--dim);font-size:10px'>"+fmtSize(i.size||0)+"</span><button class='btn sm' onclick='restoreFile(\""+i.trashId+"\")'>♻ 还原</button><button class='btn sm' style='color:var(--err)' onclick='purgeFile(\""+i.trashId+"\")'>✕ 删除</button></div>"}).join("")}catch(e){console.error(e)}}
+async function restoreFile(id){try{const r=await apiPost("/api/trash/restore",{id});if(r.restored){toast("♻ 已还原");showTrash();allFiles=await api("/api/files");renderFiles()}else toast("失败",true)}catch(e){toast("失败",true)}}
+async function purgeFile(id){if(!confirm("彻底删除？"))return;try{const r=await apiPost("/api/trash/purge",{id});if(r.purged){toast("✕ 已删除");showTrash()}else toast("失败",true)}catch(e){toast("失败",true)}}
+function closeTrash(){var m=$("trash-modal");if(m)m.style.display="none"}
+
+/* Special Thanks 全屏覆盖 */
+function showThanks(){const o=$("thanks-overlay");if(!o)return;o.classList.add("show");initStars();document.body.style.overflow="hidden"}
+function closeThanks(){const o=$("thanks-overlay");if(!o)return;o.classList.remove("show");document.body.style.overflow=""}
+function initStars(){const c=$("thanks-stars");if(!c||c.children.length)return;for(let i=0;i<40;i++){const s=document.createElement("div");s.className="thanks-star";s.style.left=Math.random()*100+"%";s.style.top=Math.random()*100+"%";s.style.animationDelay=Math.random()*3+"s";s.style.animationDuration=(2+Math.random()*4)+"s";c.appendChild(s)}}
+
+$("badge").addEventListener("click",async()=>{const s=await api("/api/status");await api("/api/"+(s.enabled?"disable":"enable"));toast(s.enabled?"⏸ 已暂停":"▶ 已恢复");loadAll()});
+$("btn-refresh").addEventListener("click",()=>{toast("🔄 已刷新");loadAll()});
+$("search").addEventListener("input",()=>{if($("search-mode").value==="file")renderFiles()});
+$("search").addEventListener("keydown",e=>{if(e.key==="Enter"&&$("search-mode").value!=="file"){e.preventDefault();contentSearch($("search").value,"hybrid")}});
+$("search-mode").addEventListener("change",()=>{const m=$("search-mode").value;$("search").placeholder=m==="file"?"🔍 搜索文件名…":"🔍 搜索内容…（回车）";if(m==="file")renderFiles()});
+setInterval(()=>{loadAll();var c=document.getElementById("content");if(c&&c.innerHTML.includes("用户画像"))v4Profile()},30000);
+loadAll();
+</script>
+</body>
+</html>
