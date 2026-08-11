@@ -26,6 +26,8 @@ Mnemosyne solves the **memory loss and context degradation** problem in OpenClaw
 <img width="3200" height="1782" alt="联想截图_20260807175504" src="https://github.com/user-attachments/assets/f229feef-0227-4f75-a182-f476cb0835cc" />
 <img width="3200" height="1782" alt="联想截图_20260807180850" src="https://github.com/user-attachments/assets/a6a471d5-d633-4601-9cda-bad5f2c2bab2" />
 
+## Special Thanks
+  桦染霜（Tiktok ID）
 
 ## ⚡ Quick Start
 
@@ -44,3 +46,4 @@ open http://localhost:8765
 If you want you get more information please step to MNEMOSYNE-REFERENCE.md
 
 If you want to get more about the product iteration information please step to CHANGELOG.md
+
