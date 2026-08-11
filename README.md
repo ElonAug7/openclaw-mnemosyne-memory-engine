@@ -1,30 +1,33 @@
-# Mnemosyne — Zero-Dependency Local Memory Engine for OpenClaw
+# Mnemosyne — Zero-Dependency Local Memory Engine for agent
 
-> 247KB（Mnemosyne-v4.5） runtime · No LLM API · No Vector DB · Pure Markdown · Git-Friendly (Only the Mnemosyne-v4.5(English)， v4.5-pro v5 support bilingual)
+> ## Design Philosophy: Data Sovereignty First.
+>   Your data is yours. Always. No exceptions.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-## Design Philosophy: Data Sovereignty First.
-（设计哲学：数据主权至上）
-## Your data is yours. Always. No exceptions.
-## ·Zero egress — No data ever leaves your device
-## ·Zero lock-in — Plain Markdown, not proprietary formats
-## ·Zero cost — No API calls, no tokens, no surprises
 
-## 🎯 What It Does
+## 💡 What It Is & Where It Fits
 
-Mnemosyne solves the **memory loss and context degradation** problem in OpenClaw conversations — without adding any external dependencies.
+Mnemosyne is a **zero-dependency, local-first memory engine** purpose‑built for AI agents. It integrates natively with **OpenClaw**, **Hermes**, and any agentic framework — and runs out‑of‑the‑box on **Windows, Linux, and macOS**.All this, in just **527KB** — small enough to fit on a floppy disk, run on a Raspberry Pi, or embed into any edge device. No cloud, no bloat, just memory.
 
-- **Zero token cost** — No LLM API calls for memory retrieval; everything runs locally with TF-IDF + KNN
-- **Full data ownership** — All memories stored as plain Markdown files on your machine; nothing leaves your device
-- **Tiny footprint** — <0.5MB runtime, no vector database, no embedding model, no Docker required
-- **Git-native** — Memory files are version-controllable, diffable, and human-readable
-- **Rich feature set** — Heartbeat heatmap, time-machine recall, user profiling, 7-way parallel search, and more
+Wherever you need persistent, sovereign memory without the cloud:
+- 🤖 **Agentic workflows** — give your agents long‑term recall without a single API call
+- 🧠 **Personal AI assistants** — remember user preferences, conversation history, and past interactions, all stored locally
+- 🛠️ **Development tools** — maintain context across multi‑hour coding sessions, even offline
+- 📚 **Learning companions** — implement spaced repetition and review schedules, never exposing learner data to third parties
+
+Whether you're deploying on a Windows workstation, a Linux server, or a macOS laptop, Mnemosyne works identically — because memory sovereignty shouldn't depend on your operating system.
+
+## 🎯Why it is special
+  Mnemosyne doesn't use neural networks. It uses 140 years of cognitive psychology — from Ebbinghaus' forgetting curve (1885) to SAM compound-cue theory (1981), from the Zeigarnik effect (1927) to TEPA memory revocation (arXiv 2026). Thirty-one papers, ten retrieval factors, all encoded as pure mathematical formulas. It stores like a machine and recalls like a human — without a single API call.
+ 
+  Our compound-cue formula isn't fitted from training data — it's a direct translation of the SAM model into code. Five base weights (imp, recency, keyword, hitFreq, layerW), five cognitive biases (topic coherence, Zeigarnik, Primacy, Context, Testing Boost), and three post-processing filters (superseded, MMR, RIF). Every single factor traces back to a named researcher and a published year. Ask "why 0.35" — the answer is Raaijmakers & Shiffrin, 1981. Not a hyperparameter sweep.
+  
+  Most AI memory systems are black boxes — feed everything to a large model, let it memorize, let it retrieve. Expensive, slow, and unreliable. We took a different path: 140 years of scientific research on how human memory actually works. We turned psychology formulas into code. No AI models, no API keys — yet the agent remembers like a person. Important things stick. Old memories fade but never disappear. A single keyword triggers entire conversations. That's not artificial intelligence. That's human intelligence, reverse-engineered.
 
 ## 🖥️ Demo / Screenshots
 
-<img width="3200" height="1782" alt="联想截图_20260807175504" src="https://github.com/user-attachments/assets/f229feef-0227-4f75-a182-f476cb0835cc" />
-<img width="3200" height="1782" alt="联想截图_20260807180850" src="https://github.com/user-attachments/assets/a6a471d5-d633-4601-9cda-bad5f2c2bab2" />
+<img width="3200" height="1816" alt="image" src="https://github.com/user-attachments/assets/c125f828-6f31-4aa8-aad2-f6a91fce08b1" />
 
 ## Special Thanks
   桦染霜（Tiktok ID）
@@ -32,7 +35,7 @@ Mnemosyne solves the **memory loss and context degradation** problem in OpenClaw
 ## ⚡ Quick Start
 
 ```bash
-git clone https://github.com/ElonAug7/Project-Mnemosyne-for-openclaw-.git
+git clone https://github.com/ElonAug7/Mnemosyne-agentmemory-engine-openclaw-hermes
 cp -r → bash install.sh
 open http://localhost:8765
 
