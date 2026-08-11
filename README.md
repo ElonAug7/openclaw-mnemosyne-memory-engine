@@ -1,7 +1,16 @@
 # Mnemosyne — Zero-Dependency Local Memory Engine for agent
 
-> ## Design Philosophy: Data Sovereignty First.
->   Your data is yours. Always. No exceptions.
+## Data Sovereignty by Design
+
+·Not a policy. Not a promise. A property of the architecture.
+
+·527KB. Zero dependencies. Runs anywhere.
+
+·No telemetry. No API keys. No data leaves your machine.
+
+·Every memory is a Markdown file — readable, diffable, yours forever.
+
+·We don't ask for permission to remember your data. We ask for none.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
