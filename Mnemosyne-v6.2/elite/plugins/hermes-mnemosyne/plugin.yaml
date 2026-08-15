@@ -1,0 +1,26 @@
+# Mnemosyne Hermes 插件元数据
+name: mnemosyne
+display_name: Mnemosyne 认知记忆引擎
+version: 1.0.0
+type: memory_provider
+author: ElonAug7
+entry: __init__.py
+description: >-
+  零依赖、纯本地的分层认知记忆引擎。基于认知科学公式（复合线索理论等）实现，
+  经 Hermes MemoryProvider ABC 原生接入：prefetch/sync_turn 系统级自动调用，
+  无需 agent 自觉。无 pip 依赖、无 API key、无网络。
+requires:
+  node: ">=18.0"
+provides:
+  memory_provider: MnemosyneMemoryProvider
+  tools:
+    - mnemo_search
+    - mnemo_context
+    - mnemo_status
+    - mnemo_todos
+config:
+  memory:
+    mnemosyne:
+      root: null      # 数据目录（默认自动推断）
+      node: node      # Node.js 可执行文件
+      bridge: null    # hermes-bridge.js 绝对路径（安装时自动注入）
