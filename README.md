@@ -36,6 +36,18 @@ Whether you're deploying on a Windows workstation, a Linux server, or a macOS la
 
 ## 🖥️ Demo / Screenshots
 
+<p align="center">
+  <img src="marketing/01-banner.png" alt="Mnemosyne banner" width="100%" />
+</p>
+
+|  |  |
+|---|---|
+| <img src="marketing/02-benchmark.png" alt="Benchmark" width="100%" /> | <img src="marketing/03-comparison.png" alt="Comparison" width="100%" /> |
+
+<p align="center">
+  <img src="marketing/04-architecture.png" alt="Architecture" width="100%" />
+</p>
+
 <img width="3200" height="1816" alt="image" src="https://github.com/user-attachments/assets/c125f828-6f31-4aa8-aad2-f6a91fce08b1" />
 
 ## Special Thanks
