@@ -45,8 +45,30 @@ Whether you're deploying on a Windows workstation, a Linux server, or a macOS la
 
 ```bash
 git clone https://github.com/ElonAug7/Mnemosyne-agentmemory-engine-openclaw-hermes
-cp -r → bash install.sh
+cd Mnemosyne-agentmemory-engine-openclaw-hermes/Mnemosyne-v6.4
+bash install.sh
 open http://localhost:8765
+```
+
+## 🚀 Latest: v6.4 — Beats every embedding system, without a single embedding
+
+On our Memory-Native Evaluation benchmark (80 queries, 11 systems including Mem0, LlamaIndex, qwen-agent, Google ADK):
+
+| System | nDCG@10 |
+|---|---|
+| Mnemosyne v6.2 | 0.046 |
+| raw BM25 baseline | 0.185 |
+| embedding systems (Mem0 / LlamaIndex / ...) | 0.12–0.16 |
+| **Mnemosyne v6.3+** | **0.238** — 5.2× over v6.2, beats everything, pure local keywords |
+
+Search latency: **~7ms** (keyword mode, measured on real data). Target: always < 50ms.
+
+**What's new in v6.4**
+- User profile reconstruction — multi-source distillation (decisions, tagged summaries, structured facts) instead of copying files
+- True BM25 ranking (v6.3) + weight rebalance: retrieval is decoupled from memory importance
+- 8/8 test suite passing · zero-dependency · zero API keys
+
+Full details in `CHANGELOG.md` · install: `cd Mnemosyne-v6.4 && bash install.sh`
 
 ## 📊 How It Compares（full documents are in the /docs file）
 

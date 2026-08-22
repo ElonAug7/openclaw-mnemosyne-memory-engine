@@ -2,6 +2,49 @@
 
 All notable changes to Mnemosyne.
 
+## [v6.4.0] — User Profile Reconstruction (2026-08-22)
+
+### Changed
+- **Profile extraction rewrite** (`cmdProfile`): upgraded from "copy MEMORY.md" to multi-source distillation
+  - Medium summary blocks (`#decision`/`#tech`/`#planning` tags, skips `[superseded]` stale text)
+  - Working-memory decisions/facts with benchmark-debug noise filtering
+  - MEMORY.md structured sections → clean tech-stack tags (no raw sentence dumps)
+- **Tech-stack detection**: curated keyword table (OpenClaw/Qwen/Bailian/Ubuntu/VirtualBox/Mnemosyne...); over-generic terms (node/python/js/react/vue) excluded to avoid false positives
+- **Style/pace inference**: multi-source score-based (concise vs detail, fast vs deliberate) instead of narrow keyword matching
+- **Honest maturity**: content-based scoring (tech+focus+pref+style+personality) replaces inflated turn-count percentage
+
+### Fixed
+- `${maturity}` interpolation bug (plain string instead of template literal)
+- React/Vue false positives from scanning `[superseded]` history
+
+### Removed
+- 11 leftover benchmark workspaces (`ws-*`) + Python cache dirs (~900KB reclaimed)
+
+## [v6.3.0] — Retrieval Core Reconstruction (2026-08-16)
+
+### Changed
+- **True BM25 scoring** (Okapi BM25: IDF + term-frequency + length normalization, k1=1.5/b=0.75), sigmoid-normalized into the compound-cue formula
+- **Weight rebalance**: keyword 0.25→0.45, imp 0.35→0.20, recency 0.25→0.15 — retrieval decoupled from memory value
+- **kw=0 forced demotion** (×0.3) + meaningful-hit gating; unigram fallback when bigram hits are zero
+- **Performance fixes**: MMR/RIF rerank limited to top-60, gram sets cached, query tokenization cache, hit-frequency batched writes (300ms debounce) — P50 back from 248ms to 62ms
+
+### Benchmark (Memory-Native Evaluation, 80 queries)
+| System | nDCG@10 |
+|---|---|
+| v6.2 | 0.046 |
+| raw BM25 baseline | 0.185 |
+| **v6.3** | **0.238** (+5.2× vs v6.2, beats raw BM25 and all embedding systems) |
+
+## [v6.2.0] — Hardening (2026-08-15)
+- Test suite (8 scripts), single-source-of-truth VERSION file
+- Hermes native plugin adapter layer; `install-elite.sh --hermes-plugin`
+- Medium-block dedupe (106 duplicate blocks → 0)
+- Fixed 10+ bugs incl. ui.js env handling, install `set -u`, cleanup crashes
+
+## [v6.1.0] — Cognitive Effects Pack (2026-08-11)
+- Scoring additions: primacy effect, RIF penalty (Anderson & Bjork 1994), testing boost (Roediger & Karpicke 2006), Zeigarnik todo signal, context bonus, confidence multiplier
+- Retro-terminal Web UI; Windows MSYS/MinGW + Hermes third-party adapter verification
+
 ## [v5.0.0] — Compound-Cue Core (2026-08-09)
 
 ### v5 核心升级：复合线索评分模型
